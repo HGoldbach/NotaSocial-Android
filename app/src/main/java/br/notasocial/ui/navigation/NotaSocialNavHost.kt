@@ -36,7 +36,9 @@ fun NotaSocialNavHost(
             )
         }
         composable(route = CatalogDestination.route) {
-            CatalogScreen()
+            CatalogScreen(
+                navigateToQrCode = { navController.navigate(QrCodeDestination.route) }
+            )
         }
         composable(
             route = QrCodeResultDestination.routeWithArgs,

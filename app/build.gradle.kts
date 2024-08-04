@@ -69,17 +69,6 @@ dependencies {
     implementation("androidx.room:room-common:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
 
-//    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
-//
-//    implementation(libs.hilt.android)
-//    implementation(libs.hilt.navigation.compose)
-//    kapt(libs.hilt.android.compiler)
-//
-//    implementation(libs.retrofit2.retrofit)
-//    implementation(libs.retrofit2.converter.gson)
-//    implementation(libs.retrofit2.serialization.converter)
-//    implementation(libs.gson)
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

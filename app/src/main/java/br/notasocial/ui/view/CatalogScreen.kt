@@ -3,13 +3,12 @@ package br.notasocial.ui.view
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -17,9 +16,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,11 +26,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -39,10 +35,8 @@ import br.notasocial.R
 import br.notasocial.data.model.Catalog
 import br.notasocial.ui.AppViewModelProvider
 import br.notasocial.ui.navigation.NavigationDestination
-import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.viewmodel.CatalogUiState
 import br.notasocial.ui.viewmodel.CatalogViewModel
-import org.w3c.dom.Text
 
 object CatalogDestination : NavigationDestination {
     override val route = "catalog"
@@ -52,13 +46,15 @@ object CatalogDestination : NavigationDestination {
 @Composable
 fun CatalogScreen(
     modifier: Modifier = Modifier,
+    navigateToQrCode: () -> Unit,
     viewModel: CatalogViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     when (val uiState: CatalogUiState = viewModel.catalogUiState) {
         is CatalogUiState.Loading -> LoadingCatalog()
         is CatalogUiState.Error -> ErrorCatalog()
         is CatalogUiState.Success -> SuccessCatalog(
-            uiState.catalog
+            catalog = uiState.catalog,
+            navigateToQrCode = navigateToQrCode
         )
     }
 }
@@ -66,19 +62,37 @@ fun CatalogScreen(
 @Composable
 fun SuccessCatalog(
     catalog: Catalog,
+    navigateToQrCode: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier.background(Color.hsl(0f,0f,0.97f,1f)),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "PRODUTOS",
-            fontWeight = FontWeight.Black,
-            fontSize = 24.sp,
-            color = Color.Black,
-            modifier = Modifier.padding(vertical = 20.dp)
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "PRODUTOS",
+                fontWeight = FontWeight.Black,
+                fontSize = 24.sp,
+                color = Color.Black,
+                modifier = Modifier.padding(vertical = 20.dp)
+            )
+            IconButton(
+                onClick = { navigateToQrCode() },
+            ) {
+               Icon(
+                   painter = painterResource(id = R.drawable.circle_arrow_left_solid),
+                   contentDescription = "",
+                   modifier = Modifier.size(36.dp),
+                   tint = Color.hsl(0f, 0f, 0.77f, 1f)
+               )
+            }
+        }
+
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             modifier = Modifier
@@ -88,7 +102,7 @@ fun SuccessCatalog(
         ) {
             items(catalog.content!!, key = { it?.id!! }) {
                 if (it != null) {
-                    catalogItem(content = it, modifier = Modifier.padding(top = 10.dp, bottom = 10.dp))
+                    CatalogItem(content = it, modifier = Modifier.padding(top = 10.dp, bottom = 10.dp))
                 }
             }
         }
@@ -97,7 +111,7 @@ fun SuccessCatalog(
 
 
 @Composable
-fun catalogItem(
+fun CatalogItem(
     content: Catalog.Content,
     modifier: Modifier = Modifier
 ) {
@@ -187,7 +201,9 @@ fun catalogItem(
 @Composable
 fun LoadingCatalog() {
     Column(
-        modifier = Modifier.fillMaxSize().background(Color.hsl(0f,0f,.97f,1f)),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.hsl(0f, 0f, .97f, 1f)),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -201,5 +217,13 @@ fun LoadingCatalog() {
 
 @Composable
 fun ErrorCatalog() {
-    Text(text = "Error")
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.hsl(0f, 0f, .97f, 1f)),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(text = "Erro ao buscar os produtos")
+    }
 }
