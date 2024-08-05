@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
     <domain-config cleartextTrafficPermitted="true">
+        // Altere o ip e adicione o da sua maquina que está rodando o backend
         <domain includeSubdomains="true">192.168.18.11</domain>
     </domain-config>
 </network-security-config>
