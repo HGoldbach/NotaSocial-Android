@@ -1,10 +1,9 @@
 package br.notasocial.ui.navigation
 
-import QrCodeDestination
-import QrCodeScreen
+import br.notasocial.ui.view.qrcode.QrCodeDestination
+import br.notasocial.ui.view.qrcode.QrCodeScreen
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -13,8 +12,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import br.notasocial.ui.view.CatalogDestination
 import br.notasocial.ui.view.CatalogScreen
-import br.notasocial.ui.view.QrCodeResultDestination
-import br.notasocial.ui.view.QrCodeResultScreen
+import br.notasocial.ui.view.home.HomeScreen
+import br.notasocial.ui.view.home.HomeScreenDestination
+import br.notasocial.ui.view.login.LoginScreen
+import br.notasocial.ui.view.login.LoginScreenDestination
+import br.notasocial.ui.view.qrcode.QrCodeResultDestination
+import br.notasocial.ui.view.qrcode.QrCodeResultScreen
+import br.notasocial.ui.view.registar.RegistrarScreen
+import br.notasocial.ui.view.registar.RegistrarScreenDestination
 
 @Composable
 fun NotaSocialNavHost(
@@ -25,9 +30,31 @@ fun NotaSocialNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = QrCodeDestination.route,
+        startDestination = HomeScreenDestination.route,
         modifier = modifier
     ) {
+
+        composable(route = HomeScreenDestination.route) {
+            HomeScreen(
+                navigateToLogin = { navController.navigate(LoginScreenDestination.route) },
+                navigateToRegistrar = { navController.navigate(RegistrarScreenDestination.route) }
+            )
+        }
+
+        composable(route = LoginScreenDestination.route) {
+            LoginScreen(
+                navigateToRegistrar = { navController.navigate(RegistrarScreenDestination.route) },
+                navigateUp = { navController.navigateUp() }
+            )
+        }
+
+        composable(route = RegistrarScreenDestination.route) {
+            RegistrarScreen(
+                navigateToLogin = { navController.navigate(LoginScreenDestination.route) },
+                navigateUp = { navController.navigateUp() }
+            )
+        }
+
         composable(route = QrCodeDestination.route) {
             QrCodeScreen(
                 onRequestPermission = checkCameraPermission,

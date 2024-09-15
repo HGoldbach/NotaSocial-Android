@@ -8,7 +8,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.notasocial.data.repository.NotaSocialApiRepository
-import br.notasocial.ui.view.QrCodeResultDestination
+import br.notasocial.ui.view.qrcode.QrCodeResultDestination
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
