@@ -1,8 +1,6 @@
 package br.notasocial.ui.view.consumidor.home
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,79 +15,41 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import br.notasocial.R
+import br.notasocial.data.model.Category
+import br.notasocial.data.model.Social.Product
+import br.notasocial.ui.AppViewModelProvider
 import br.notasocial.ui.NotaSocialBottomAppBar
 import br.notasocial.ui.NotaSocialTopAppBar
+import br.notasocial.ui.components.category.CategoryItem
+import br.notasocial.ui.components.product.ProductItem
 import br.notasocial.ui.navigation.NavigationDestination
 import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.ralewayFamily
+import br.notasocial.ui.viewmodel.consumidor.home.HomeViewModel
 
 object HomeDestination : NavigationDestination {
     override val route = "home"
     override val title = "Home"
 }
-
-data class Categoria(val id: Int, val nome: String)
-
-data class Produto(
-    val id: Int,
-    val nome: String,
-    val imagem: Int,
-    var isFavorite: Boolean,
-    val preco: Double
-)
-
-val categorias = listOf(
-    Categoria(1, "Alimentos"),
-    Categoria(2, "Feira"),
-    Categoria(3, "Bebidas"),
-    Categoria(4, "Carnes"),
-    Categoria(5, "Frutas"),
-    Categoria(6, "Verduras"),
-    Categoria(7, "Padaria"),
-    Categoria(8, "Laticínios"),
-    Categoria(9, "Higiene"),
-    Categoria(10, "Limpeza"),
-    Categoria(11, "Outros")
-)
-
-
-
-val produtos = listOf(
-    Produto(
-        1, "Pao Forma Seven Boys", R.drawable.pao_forma, true, 6.69
-    ),
-    Produto(
-        2, "Mamão Formosa", R.drawable.mamao_formosa, false, 12.50
-    ),
-    Produto(
-        3, "Arroz TP1 Buriti", R.drawable.arroz_buriti, false, 6.69
-    )
-)
 
 @Composable
 fun HomeScreen(
@@ -103,7 +63,8 @@ fun HomeScreen(
     navigateToRegistrar: () -> Unit,
     navigateToHome: () -> Unit,
     navigateToPerfilProprio: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val scrollState = rememberScrollState()
     Scaffold(
@@ -140,208 +101,41 @@ fun HomeScreen(
             SlideSection()
             Spacer(modifier = Modifier.height(25.dp))
             CategorySection(
-                categorias = categorias
+                categories = viewModel.categories
             )
             Spacer(modifier = Modifier.height(25.dp))
             LastUpdatesSection(
-                produtos = produtos
+                products = viewModel.products
             )
-        }
 
-    }
-}
-
-@Composable
-fun LastUpdatesSection(
-    produtos: List<Produto>,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .padding(start = 20.dp, end = 10.dp)
-            .fillMaxWidth()
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = "Últimas Atualizações",
-                color = Color.Black,
-                fontFamily = ralewayFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 18.sp
-            )
-            IconButton(
-                onClick = { /*TODO*/ },
-                modifier = Modifier.padding(top = 8.dp)
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.right_arrow),
-                    contentDescription = "",
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-        }
-    }
-    LazyRow(
-        modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = 16.dp)
-    ) {
-        items(items = produtos, key = { it.id }) { produto ->
-            ProductItem(
-                produto,
-                Modifier
-                    .padding(8.dp)
-                    .background(Color.White, shape = RoundedCornerShape(15.dp))
-                    .padding(10.dp)
-            )
         }
     }
 }
 
 @Composable
-fun ProductItem(
-    produto: Produto,
+fun NotaSocialTitle(
     modifier: Modifier = Modifier
 ) {
-    var isFavorite by remember {
-        mutableStateOf(false)
-    }
     Column(
-        modifier = modifier
-            .width(120.dp),
-        horizontalAlignment = Alignment.End
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(
-            painter = if (isFavorite) {
-                painterResource(R.drawable.heart_solid)
-            } else {
-                painterResource(R.drawable.heart_regular)
-            },
-            contentDescription = "",
-            tint = if (isFavorite) {
-                Color.hsl(0f, 1f, .44f, 1f)
-            } else {
-                Color.Gray
-            },
-            modifier = Modifier
-                .size(18.dp)
-                .clickable { isFavorite = !isFavorite }
-        )
-        Image(
-            painter = painterResource(produto.imagem),
-            contentDescription = "",
-            modifier = Modifier.fillMaxWidth()
-        )
         Text(
-            text = produto.nome,
+            text = stringResource(id = R.string.app_name).uppercase(),
+            color = Color.hsl(128f, .52f, .47f, 1f),
             fontFamily = ralewayFamily,
-            fontWeight = FontWeight.Medium,
-            fontSize = 12.sp,
-            modifier = Modifier.fillMaxWidth(),
-            minLines = 2,
-            lineHeight = 1.em
+            fontWeight = FontWeight.ExtraBold,
+            fontSize = 24.sp
         )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "R$${produto.preco}",
-                fontFamily = ralewayFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 14.sp
-            )
-            IconButton(
-                onClick = {},
-                colors = IconButtonDefaults.iconButtonColors(
-                    containerColor = Color.hsl(128f, .52f, .47f, .2f)
-                )
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.cart_shopping_solid),
-                    contentDescription = "",
-                    tint = Color.hsl(123f, .63f, .33f, 1f),
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun CategorySection(
-    modifier: Modifier = Modifier,
-    categorias: List<Categoria>
-) {
-    Column(
-        modifier = modifier
-            .padding(start = 20.dp, end = 10.dp)
-            .fillMaxWidth()
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = "Categorias",
-                color = Color.Black,
-                fontFamily = ralewayFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 18.sp
-            )
-            IconButton(
-                onClick = { /*TODO*/ },
-                modifier = Modifier.padding(top = 8.dp)
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.right_arrow),
-                    contentDescription = "",
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-        }
-    }
-    LazyRow(
-        modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = 5.dp)
-    ) {
-        items(items = categorias, key = { it.id }) { categoria ->
-            CategoryItem(categoria)
-        }
-    }
-}
-
-@Composable
-fun CategoryItem(
-    categoria: Categoria,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Surface(
-            modifier = modifier
-                .size(100.dp)
-                .padding(10.dp),
-            shape = CircleShape,
-            color = Color.White
-        ) {}
         Text(
-            text = categoria.nome,
+            text = stringResource(id = R.string.app_slogan),
             color = Color.Black,
             fontFamily = ralewayFamily,
-            fontWeight = FontWeight.SemiBold,
+            fontWeight = FontWeight.Medium,
             fontSize = 12.sp
         )
     }
-
 }
-
 
 @Composable
 fun SlideSection(
@@ -404,7 +198,7 @@ fun SlideSection(
                 )
             }
             Text(
-                text = "Buscar Produto",
+                text = stringResource(id = R.string.search_product),
                 color = Color.hsl(128f, .52f, .47f, 1f),
                 textDecoration = TextDecoration.Underline,
                 fontFamily = ralewayFamily,
@@ -416,27 +210,100 @@ fun SlideSection(
 }
 
 @Composable
-fun NotaSocialTitle(
+fun CategorySection(
+    modifier: Modifier = Modifier,
+    categories: List<Category>
+) {
+    Column(
+        modifier = modifier
+            .padding(start = 20.dp, end = 10.dp)
+            .fillMaxWidth()
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = stringResource(id = R.string.categories),
+                color = Color.Black,
+                fontFamily = ralewayFamily,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 18.sp
+            )
+            IconButton(
+                onClick = { /*TODO*/ },
+                modifier = Modifier.padding(top = 8.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.right_arrow),
+                    contentDescription = "",
+                    tint = Color.Black,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+    }
+    LazyRow(
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = 5.dp)
+    ) {
+        items(items = categories, key = { it.id }) { category ->
+            CategoryItem(
+                text = category.name
+            )
+        }
+    }
+}
+
+@Composable
+fun LastUpdatesSection(
+    products: List<Product>,
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = modifier
+            .padding(start = 20.dp, end = 10.dp)
+            .fillMaxWidth()
     ) {
-        Text(
-            text = "NOTA SOCIAL",
-            color = Color.hsl(128f, .52f, .47f, 1f),
-            fontFamily = ralewayFamily,
-            fontWeight = FontWeight.ExtraBold,
-            fontSize = 24.sp
-        )
-        Text(
-            text = "Compartilhe, compare, economize",
-            color = Color.Black,
-            fontFamily = ralewayFamily,
-            fontWeight = FontWeight.Medium,
-            fontSize = 12.sp
-        )
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = stringResource(id = R.string.products_last_updates),
+                color = Color.Black,
+                fontFamily = ralewayFamily,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 18.sp
+            )
+            IconButton(
+                onClick = { /*TODO*/ },
+                modifier = Modifier.padding(top = 8.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.right_arrow),
+                    contentDescription = "",
+                    tint = Color.Black,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+    }
+    LazyRow(
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = 16.dp)
+    ) {
+        items(items = products, key = { it.id }) { product ->
+            ProductItem(
+                product,
+                Modifier
+                    .padding(8.dp)
+                    .background(Color.White, shape = RoundedCornerShape(15.dp))
+                    .padding(10.dp)
+            )
+        }
     }
 }
 
@@ -460,8 +327,16 @@ fun SlideSectionPreview() {
 @Composable
 fun CategorySectionPreview() {
     NotasocialTheme {
+        val mockCategories = listOf(
+            Category(1, "Frutas", ""),
+            Category(2, "Verduras", ""),
+            Category(3, "Carnes", ""),
+            Category(4, "Laticínios", ""),
+            Category(5, "Doces", ""),
+            Category(6, "Outros", "")
+        )
         CategorySection(
-            categorias = categorias
+            categories = mockCategories
         )
     }
 }
