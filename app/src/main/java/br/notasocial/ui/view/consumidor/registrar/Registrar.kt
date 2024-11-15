@@ -1,4 +1,4 @@
-package br.notasocial.ui.view.registar
+package br.notasocial.ui.view.consumidor.registar
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

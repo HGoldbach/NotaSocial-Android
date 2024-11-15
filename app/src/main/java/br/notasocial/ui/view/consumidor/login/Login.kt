@@ -1,4 +1,4 @@
-package br.notasocial.ui.view.login
+package br.notasocial.ui.view.consumidor.login
 
 
 import androidx.compose.foundation.background

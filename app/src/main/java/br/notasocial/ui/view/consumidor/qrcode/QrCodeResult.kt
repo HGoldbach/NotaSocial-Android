@@ -1,4 +1,4 @@
-package br.notasocial.ui.view.qrcode
+package br.notasocial.ui.view.consumidor.qrcode
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -32,8 +32,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import br.notasocial.R
 import br.notasocial.ui.AppViewModelProvider
 import br.notasocial.ui.navigation.NavigationDestination
-import br.notasocial.ui.viewmodel.QrCodeResultViewModel
-import br.notasocial.ui.viewmodel.ReceiptUiState
+import br.notasocial.ui.viewmodel.qrcode.QrCodeResultViewModel
+import br.notasocial.ui.viewmodel.qrcode.ReceiptUiState
 
 
 object QrCodeResultDestination : NavigationDestination {

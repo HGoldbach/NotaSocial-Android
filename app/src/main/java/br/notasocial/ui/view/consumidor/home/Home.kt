@@ -1,20 +1,13 @@
-package br.notasocial.ui.view.home
+package br.notasocial.ui.view.consumidor.home
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,7 +20,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -49,35 +41,43 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import br.notasocial.R
 import br.notasocial.ui.NotaSocialBottomAppBar
+import br.notasocial.ui.NotaSocialTopAppBar
 import br.notasocial.ui.navigation.NavigationDestination
 import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.ralewayFamily
 
-object HomeScreenDestination : NavigationDestination {
+object HomeDestination : NavigationDestination {
     override val route = "home"
     override val title = "Home"
 }
 
 data class Categoria(val id: Int, val nome: String)
 
-data class Produto(val id: Int, val nome: String, val imagem: Int, var isFavorite: Boolean, val preco: Double)
+data class Produto(
+    val id: Int,
+    val nome: String,
+    val imagem: Int,
+    var isFavorite: Boolean,
+    val preco: Double
+)
 
 val categorias = listOf(
-        Categoria(1, "Alimentos"),
-        Categoria(2,"Feira"),
-        Categoria(3, "Bebidas"),
-        Categoria(4, "Carnes"),
-        Categoria(5, "Frutas"),
-        Categoria(6, "Verduras"),
-        Categoria(7, "Padaria"),
-        Categoria(8, "Laticínios"),
-        Categoria(9, "Higiene"),
-        Categoria(10, "Limpeza"),
-        Categoria(11, "Outros")
+    Categoria(1, "Alimentos"),
+    Categoria(2, "Feira"),
+    Categoria(3, "Bebidas"),
+    Categoria(4, "Carnes"),
+    Categoria(5, "Frutas"),
+    Categoria(6, "Verduras"),
+    Categoria(7, "Padaria"),
+    Categoria(8, "Laticínios"),
+    Categoria(9, "Higiene"),
+    Categoria(10, "Limpeza"),
+    Categoria(11, "Outros")
 )
+
+
 
 val produtos = listOf(
     Produto(
@@ -89,20 +89,43 @@ val produtos = listOf(
     Produto(
         3, "Arroz TP1 Buriti", R.drawable.arroz_buriti, false, 6.69
     )
-
 )
-
 
 @Composable
 fun HomeScreen(
+    navigateToBuscarProduto: () -> Unit,
+    navigateToEstabelecimentos: () -> Unit,
+    navigateToRanking: () -> Unit,
+    navigateToFavoritos: () -> Unit,
+    navigateToShoplist: () -> Unit,
+    navigateToCadastrarNota: () -> Unit,
     navigateToLogin: () -> Unit,
     navigateToRegistrar: () -> Unit,
+    navigateToHome: () -> Unit,
+    navigateToPerfilProprio: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
     Scaffold(
+        topBar = {
+            NotaSocialTopAppBar(
+                navigateToBuscarProduto = navigateToBuscarProduto,
+                navigateToEstabelecimentos = navigateToEstabelecimentos,
+                navigateToRanking = navigateToRanking,
+                navigateToFavoritos = navigateToFavoritos,
+                navigateToShoplist = navigateToShoplist,
+                navigateToCadastrarNota = navigateToCadastrarNota,
+                navigateToLogin = navigateToLogin,
+                navigateToRegistrar = navigateToRegistrar,
+                navigateToHome = navigateToHome
+            )
+        },
         bottomBar = {
-            NotaSocialBottomAppBar()
+            NotaSocialBottomAppBar(
+                navigateToHome = navigateToHome,
+                navigateToBuscarProduto = navigateToBuscarProduto,
+                navigateToPerfilProprio = navigateToPerfilProprio
+            )
         }
     ) {
         Column(
@@ -112,130 +135,19 @@ fun HomeScreen(
                 .padding(it)
                 .verticalScroll(scrollState)
         ) {
-            var isMenuActive by remember {
-                mutableStateOf(false)
-            }
-            Box {
-                Column(
-                    modifier = Modifier
-                        .zIndex(1f)
-                        .fillMaxWidth(),
-                    horizontalAlignment = Alignment.End
-                ) {
-                    AnimatedVisibility(
-                        visible = isMenuActive,
-                        enter = slideInHorizontally(
-                            initialOffsetX = { it },
-                            animationSpec = tween(durationMillis = 300)
-                        ),
-                        exit = slideOutHorizontally(
-                            targetOffsetX = { it },
-                            animationSpec = tween(durationMillis = 300)
-                        )
-                    ) {
-                        MenuSection(
-                            navigateToLogin = navigateToLogin,
-                            navigateToRegistrar = navigateToRegistrar,
-                            modifier = Modifier
-                        )
-                    }
-                }
-                Navbar(
-                    modifier = Modifier
-                        .zIndex(2f)
-                        .padding(start = 20.dp, top = 10.dp, end = 20.dp),
-                    isMenuActive = isMenuActive,
-                    onMenuToggle = {
-                        isMenuActive = !isMenuActive
-                    }
-                )
-                Column(
-                    modifier = Modifier
-                ) {
-                    Spacer(modifier = Modifier.height(70.dp))
-                    NotaSocialTitle()
-                    Spacer(modifier = Modifier.height(25.dp))
-                    SlideSection()
-                    Spacer(modifier = Modifier.height(25.dp))
-                    CategorySection(
-                        categorias = categorias
-                    )
-                    Spacer(modifier = Modifier.height(25.dp))
-                    LastUpdatesSection(
-                        produtos = produtos
-                    )
-                }
-
-            }
-        }
-    }
-
-}
-
-@Composable
-fun MenuSection(
-    navigateToLogin: () -> Unit,
-    navigateToRegistrar: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .fillMaxHeight()
-            .width(200.dp)
-            .background(Color.White)
-    ) {
-        MenuItem(
-            text = "Buscar Produto",
-            icon = R.drawable.search_regular,
-            modifier = Modifier.padding(top = 65.dp)
-        )
-        MenuItem(
-            text = "Ranking Usuários",
-            icon = R.drawable.ranking_solid
-        )
-        MenuItem(
-            text = "Entrar",
-            icon = R.drawable.signin_solid,
-            modifier = Modifier.clickable { navigateToLogin() }
-        )
-        MenuItem(
-            text = "Registrar",
-            icon = R.drawable.signup_solid,
-            modifier = Modifier.clickable { navigateToRegistrar() }
-        )
-    }
-}
-
-@Composable
-fun MenuItem(
-    text: String,
-    icon: Int,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .width(180.dp)
-            .height(50.dp)
-            .padding(vertical = 5.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Surface(
-            modifier = Modifier.padding(start = 20.dp),
-            color = Color.Transparent
-        ) {
-            Icon(
-                painter = painterResource(icon),
-                contentDescription = "",
-                modifier = Modifier.size(16.dp),
+            NotaSocialTitle()
+            Spacer(modifier = Modifier.height(25.dp))
+            SlideSection()
+            Spacer(modifier = Modifier.height(25.dp))
+            CategorySection(
+                categorias = categorias
+            )
+            Spacer(modifier = Modifier.height(25.dp))
+            LastUpdatesSection(
+                produtos = produtos
             )
         }
-        Text(
-            text = text,
-            fontFamily = ralewayFamily,
-            fontWeight = FontWeight.Medium,
-            fontSize = 14.sp,
-            modifier = Modifier.padding(start = 10.dp)
-        )
+
     }
 }
 
@@ -528,67 +440,6 @@ fun NotaSocialTitle(
     }
 }
 
-@Composable
-fun Navbar(
-    modifier: Modifier = Modifier,
-    isMenuActive: Boolean,
-    onMenuToggle: () -> Unit
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(50.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.nota_social_typho),
-            contentDescription = "",
-            modifier = Modifier.size(50.dp)
-        )
-        Surface(
-            modifier = Modifier
-                .padding(5.dp)
-                .height(35.dp)
-                .width(45.dp),
-            shape = RoundedCornerShape(5.dp),
-            color = Color.hsl(123f, .63f, .33f, 1f)
-
-        ) {
-            IconButton(
-                onClick = { onMenuToggle() },
-                modifier = Modifier
-                    .padding(5.dp)
-                    .background(color = Color.Transparent)
-                    .size(40.dp)
-            ) {
-                Icon(
-                    painter = if(isMenuActive) {
-                        painterResource(id = R.drawable.close_xmark)
-                    } else {
-                        painterResource(id = R.drawable.menu_bars)
-                    },
-                    contentDescription = "",
-                    modifier = Modifier.size(20.dp),
-                    tint = Color.White
-                )
-            }
-        }
-
-    }
-}
-
-@Preview
-@Composable
-fun NavbarPreview() {
-    NotasocialTheme {
-        Navbar(
-            isMenuActive = false,
-            onMenuToggle = {}
-        )
-    }
-}
-
 @Preview(showBackground = true)
 @Composable
 fun NotaSocialTitlePreview() {
@@ -620,7 +471,7 @@ fun CategorySectionPreview() {
 fun HomeScreenPreview() {
     NotasocialTheme {
         HomeScreen(
-            {},{}
+            {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
         )
     }
 }

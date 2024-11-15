@@ -12,7 +12,7 @@ data class Receipt(
     @SerializedName("paymentMethod")
     val paymentMethod: String?,
     @SerializedName("store")
-    val store: Store?,
+    val store: Store,
     @SerializedName("tax")
     val tax: Double?,
     @SerializedName("totalItems")
@@ -61,29 +61,5 @@ data class Receipt(
         @SerializedName("unitValue")
         val unitValue: Double?
     )
-
-    data class Store(
-        @SerializedName("address")
-        val address: Address?,
-        @SerializedName("cnpj")
-        val cnpj: String?,
-        @SerializedName("id")
-        val id: Any?,
-        @SerializedName("name")
-        val name: String?
-    ) {
-        data class Address(
-            @SerializedName("city")
-            val city: String?,
-            @SerializedName("neighborhood")
-            val neighborhood: String?,
-            @SerializedName("number")
-            val number: String?,
-            @SerializedName("state")
-            val state: String?,
-            @SerializedName("street")
-            val street: String?
-        )
-    }
 }
 
