@@ -1,6 +1,6 @@
-package br.notasocial.ui.view.consumidor.login
+package br.notasocial.ui.view.consumidor.signin
 
-
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,33 +22,58 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import br.notasocial.R
+import br.notasocial.ui.AppViewModelProvider
 import br.notasocial.ui.components.InputField
 import br.notasocial.ui.navigation.NavigationDestination
+import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.ralewayFamily
+import br.notasocial.ui.viewmodel.consumidor.signin.SignInUiState
+import br.notasocial.ui.viewmodel.consumidor.signin.SignInViewModel
 
-object LoginScreenDestination : NavigationDestination {
-    override val route = "loginscreen"
-    override val title = "Login Screen"
+object SignInDestination : NavigationDestination {
+    override val route = "signin"
+    override val title = "Login"
 }
 
 @Composable
-fun LoginScreen(
+fun SignInScreen(
+    navigateToHome: () -> Unit,
     navigateToRegistrar: () -> Unit,
     navigateUp: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: SignInViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
+    val uiState = viewModel.uiState
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collect { event ->
+            when (event) {
+                is SignInViewModel.UiEvent.LoginSuccess -> {
+                    Toast.makeText(context, "Login realizado com sucesso!", Toast.LENGTH_SHORT)
+                        .show()
+                    navigateToHome()
+                }
+                is SignInViewModel.UiEvent.ShowError -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
     Column (
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.fillMaxSize()
@@ -58,11 +83,16 @@ fun LoginScreen(
         TopSection(
             navigateUp = navigateUp
         )
-        FormSection(modifier = Modifier.weight(1f))
+        FormSection(
+            uiState = uiState,
+            onEmailChange = viewModel::onEmailChange,
+            onSenhaChange = viewModel::onPasswordChange,
+            onLogin = { viewModel.login() },
+            modifier = Modifier.weight(1f)
+        )
         BottomSection(navigateToRegistrar)
     }
 }
-
 
 @Composable
 fun TopSection(
@@ -108,36 +138,58 @@ fun TopSection(
 
 @Composable
 fun FormSection(
+    uiState: SignInUiState,
+    onLogin: () -> Unit,
+    onEmailChange: (String) -> Unit,
+    onSenhaChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var email by remember {
-        mutableStateOf("")
-    }
-    var senha by remember {
-        mutableStateOf("")
-    }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.fillMaxWidth().padding(top = 50.dp)
     ) {
         InputField(
-            value = email,
-            onValueChange = { email = it },
-            placeholder = "EMAIL",
+            value = uiState.email,
+            onValueChange = onEmailChange,
+            placeholder = "Digite o seu email".uppercase(),
             label = "EMAIL",
-            icon = Icons.Default.Email
+            icon = Icons.Default.Email,
+            isError = !uiState.isEmailValid
         )
-        Spacer(modifier = Modifier.height(30.dp))
+        if (!uiState.isEmailValid) {
+            Text(
+                text = "*Formato de email inválido",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = ralewayFamily,
+                color = Color.White,
+                textAlign = TextAlign.Start,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+        Spacer(modifier = Modifier.height(20.dp))
         InputField(
-            value = senha,
-            onValueChange = { senha = it },
+            value = uiState.password,
+            onValueChange = onSenhaChange,
             placeholder = "SENHA",
             label = "SENHA",
-            icon = Icons.Default.Lock
+            icon = Icons.Default.Lock,
+            isError = !uiState.isPasswordValid
         )
+        if (!uiState.isPasswordValid) {
+            Text(
+                text = "*A senha deve ter no mínimo 8 caracteres",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = ralewayFamily,
+                color = Color.White,
+                textAlign = TextAlign.Start,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
         Spacer(modifier = Modifier.height(30.dp))
         Button(
-            onClick = {},
+            onClick = onLogin,
             modifier = Modifier.fillMaxWidth().height(55.dp),
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
@@ -180,41 +232,13 @@ fun BottomSection(navigateToRegistrar: () -> Unit) {
     }
 }
 
-/*
+@Preview(showBackground = true)
 @Composable
-fun InputField(
-    placeholder: String
-) {
-
-    var value by remember {
-        mutableStateOf("")
-    }
-
-    OutlinedTextField(
-        value = value,
-        onValueChange = { value = it },
-        placeholder = {
-            Text(
-                text = placeholder,
-                fontSize = 12.sp,
-                fontFamily = ralewayFamily,
-                fontWeight = FontWeight.Medium,
-                color = Color.White
-            )
-        },
-        modifier = Modifier.fillMaxWidth().height(55.dp).background(Color.Transparent),
-        shape = RoundedCornerShape(15.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedTextColor = Color.hsl(123f,.63f,.33f,1f),
-            unfocusedTextColor = Color.hsl(123f,.63f,.33f,1f),
-            cursorColor = Color.hsl(123f,.63f,.33f,1f),
-            unfocusedContainerColor = Color.hsl(0f,0f,1f, .46f),
-            focusedContainerColor = Color.hsl(0f,0f,1f, .66f),
-            unfocusedBorderColor = Color.Transparent,
-            focusedBorderColor = Color.Transparent
+fun LoginScreenPreview() {
+    NotasocialTheme {
+        SignInScreen(
+            {},{},{}
         )
-    )
+    }
 }
-
-*/
 
