@@ -1,3 +1,53 @@
 <resources>
-    <string name="app_name">notasocial</string>
+    <string name="app_name">Nota Social</string>
+    <string name="app_slogan">Compartilhe, compare, economize</string>
+    <string name="search_store_placeholder">Buscar Estabelecimentos</string>
+    <string name="search_product_placeholder">Buscar Produto</string>
+    <string name="follow_profile">Seguir</string>
+    <string name="promotion_menu_item">Promoções</string>
+    <string name="address_menu_item">Endereços</string>
+    <string name="promotion_tag">Promoção</string>
+    <string name="address_tag">Endereço</string>
+    <string name="products_last_updates">Últimas Atualizações</string>
+    <string name="categories">Categorias</string>
+    <string name="search_product">Buscar Produto</string>
+    <string name="favorites_title">Favoritos</string>
+    <string name="menu_item_favorites">Favoritos</string>
+    <string name="menu_item_receipts">Notas</string>
+    <string name="menu_item_following">Seguindo</string>
+    <string name="menu_item_followers">Seguidores</string>
+    <string name="menu_item_notifications">Notificações</string>
+    <string name="menu_item_account">Conta</string>
+    <string name="notification_flag_price">Alteração de Preço</string>
+    <string name="notification_flag_comment">Novo Comentário</string>
+    <string name="notification_flag_follow">Novo Seguidor</string>
+    <string name="notification_see_product">Veja o produto</string>
+    <string name="notification_see_follow">Ver Usuário</string>
+    <string name="notification_see_comment">Ver Comentário</string>
+    <string name="notifications_title">Notificações</string>
+    <string name="followers_title">Seguidores</string>
+    <string name="followers_input_placeholder">Buscar Usuário</string>
+    <string name="following_title">Seguindo</string>
+    <string name="following_input_placeholder">Buscar Usuário</string>
+    <string name="empty_shop_list">Sua lista está vazia</string>
+    <string name="empty_shop_list_tip">Adicione produtos à sua lista\nou selecione lista cesta básica</string>
+    <string name="empty_shop_list_button_text">Cesta Básica</string>
+    <string name="empty_shop_list_button_text_alt">Voltar para a página inicial</string>
+    <string name="shop_list_products_title">Lista de Produtos</string>
+    <string name="shop_list_summary_title">Resumo da Lista</string>
+    <string name="shop_list_distance_title">Calcular por Distância</string>"
+    <string name="menu_card_item_reviews">Avaliações</string>
+    <string name="menu_card_item_followings">Seguindo</string>
+    <string name="menu_card_item_followers">Seguidores</string>
+    <string name="reviews_title">Avaliações</string>
+    <string name="back_icon_description">Voltar"></string>
+    <string name="welcome_title">Bem vindo</string>
+    <string name="create_account">Criar Conta</string>
+    <string name="profile">Perfil</string>
+    <string name="user">Usuário</string>
+    <string name="store">Estabelecimento</string>
+    <string name="has_an_account">Já possui uma conta?</string>
+    <string name="getin">Entrar</string>
+
+
 </resources>
