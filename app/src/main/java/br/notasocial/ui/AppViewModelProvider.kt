@@ -10,7 +10,7 @@ import br.notasocial.ui.viewmodel.CatalogViewModel
 import br.notasocial.ui.viewmodel.MainViewModel
 import br.notasocial.ui.viewmodel.QrCodeResultViewModel
 import br.notasocial.ui.viewmodel.QrCodeViewModel
-import br.notasocial.ui.viewmodel.buscarproduto.SearchProductViewModel
+import br.notasocial.ui.viewmodel.customer.searchproduct.SearchProductViewModel
 import br.notasocial.ui.viewmodel.customer.home.HomeViewModel
 import br.notasocial.ui.viewmodel.customer.signin.SignInViewModel
 import br.notasocial.ui.viewmodel.customer.product.ProductViewModel
