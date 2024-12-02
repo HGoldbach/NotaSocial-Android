@@ -3,5 +3,6 @@
     <domain-config cleartextTrafficPermitted="true">
         // Altere o ip e adicione o da sua maquina que está rodando o backend
         <domain includeSubdomains="true">192.168.18.11</domain>
+        <domain includeSubdomains="true">https://7929-2001-1284-f502-aa4f-d8d1-93b9-d6cf-351d.ngrok-free.app</domain>
     </domain-config>
 </network-security-config>
