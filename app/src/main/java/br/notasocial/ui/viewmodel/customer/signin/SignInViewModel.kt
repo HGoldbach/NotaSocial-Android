@@ -69,6 +69,7 @@ class SignInViewModel(
         }
     }
 
+
     private fun validateFields(): Boolean {
         val isEmailValid = Validator.isValidEmail(uiState.email)
         val isPasswordValid = Validator.isValidPassword(uiState.password)
@@ -92,6 +93,7 @@ class SignInViewModel(
         if (role == null) {
             return ""
         }
+        Log.d("SignInViewModel", "Role: $role")
         return role.toString()
     }
 

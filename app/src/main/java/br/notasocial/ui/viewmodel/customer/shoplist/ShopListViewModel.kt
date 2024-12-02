@@ -10,7 +10,7 @@ class ShopListViewModel() : ViewModel() {
     val productsEmpty = listOf<Product>()
     val products = listOf(
         Product(
-            id = 1,
+            id = "1",
             name = "Pao Forma Seven Boys",
             price = 6.69,
             category = Category(1, "Padaria", ""),
@@ -18,7 +18,7 @@ class ShopListViewModel() : ViewModel() {
             isFavorite = true,
         ),
         Product(
-            id = 2,
+            id = "2",
             name = "Pao Forma Seven Boys",
             price = 6.69,
             category = Category(1, "Padaria", ""),
@@ -26,7 +26,7 @@ class ShopListViewModel() : ViewModel() {
             isFavorite = true,
         ),
         Product(
-            id = 3,
+            id = "3",
             name = "Pao Forma Seven Boys",
             price = 6.69,
             category = Category(1, "Padaria", ""),
