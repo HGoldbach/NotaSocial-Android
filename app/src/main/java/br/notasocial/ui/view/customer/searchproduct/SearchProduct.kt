@@ -1,5 +1,6 @@
-package br.notasocial.ui.view.consumidor.searchproduct
+package br.notasocial.ui.view.customer.searchproduct
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,15 +25,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -45,8 +47,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import br.notasocial.R
 import br.notasocial.data.model.Catalog.CatalogProduct
 import br.notasocial.ui.AppViewModelProvider
-import br.notasocial.ui.NotaSocialBottomAppBar
-import br.notasocial.ui.NotaSocialTopAppBar
 import br.notasocial.ui.components.product.SearchProductItem
 import br.notasocial.ui.navigation.NavigationDestination
 import br.notasocial.ui.theme.NotasocialTheme
@@ -62,71 +62,60 @@ object SearchProductDestination : NavigationDestination {
 
 @Composable
 fun SearchProductScreen(
-    navigateToBuscarProduto: () -> Unit,
-    navigateToEstabelecimentos: () -> Unit,
-    navigateToRanking: () -> Unit,
-    navigateToFavoritos: () -> Unit,
-    navigateToShoplist: () -> Unit,
-    navigateToCadastrarNota: () -> Unit,
-    navigateToLogin: () -> Unit,
-    navigateToRegistrar: () -> Unit,
-    navigateToHome: () -> Unit,
-    navigateToPerfilProprio: () -> Unit,
     navigateToProduct: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SearchProductViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val searchText by viewModel.searchText.collectAsState()
-    val product by viewModel.product.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-    Scaffold(
-        topBar = {
-            NotaSocialTopAppBar(
-                navigateToBuscarProduto = navigateToBuscarProduto,
-                navigateToEstabelecimentos = navigateToEstabelecimentos,
-                navigateToRanking = navigateToRanking,
-                navigateToFavoritos = navigateToFavoritos,
-                navigateToShoplist = navigateToShoplist,
-                navigateToCadastrarNota = navigateToCadastrarNota,
-                navigateToLogin = navigateToLogin,
-                navigateToRegistrar = navigateToRegistrar,
-                navigateToHome = navigateToHome
-            )
-        },
-        bottomBar = {
-            NotaSocialBottomAppBar(
-                navigateToHome = navigateToHome,
-                navigateToBuscarProduto = navigateToBuscarProduto,
-                navigateToPerfilProprio = navigateToPerfilProprio
-            )
-        }
-    ) {
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .fillMaxHeight()
-                .padding(it)
-                .background(Color.hsl(0f, 0f, .97f, 1f))
-        ) {
-            SearchProductTopSection(
-                searchText = searchText,
-                onSearchChange = { text ->
-                    coroutineScope.launch {
-                        viewModel.onSearchTextChange(text)
-                    }
-                },
-                searchProduct = { viewModel.searchProduct(searchText) }
-            )
-            when (val uiState: CatalogUiState = viewModel.catalogUiState) {
-                is CatalogUiState.Loading -> ProductLoading()
-                is CatalogUiState.Error -> ProductError()
-                is CatalogUiState.Success -> ProductGrid(
-                    products = uiState.catalogProduct,
-                    navigateToProduct = navigateToProduct
-                )
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collect { event ->
+            when (event) {
+                is SearchProductViewModel.UiEvent.AddToListSuccess -> {
+                    Toast.makeText(context, "Produto adicionado com sucesso!", Toast.LENGTH_SHORT)
+                        .show()
+                }
+                is SearchProductViewModel.UiEvent.FavoriteSuccess -> {
+                    Toast.makeText(context, "Produto favoritado com sucesso!", Toast.LENGTH_SHORT)
+                        .show()
+                }
+                is SearchProductViewModel.UiEvent.ShowError -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .fillMaxHeight()
+            .background(Color.hsl(0f, 0f, .97f, 1f))
+    ) {
+        SearchProductTopSection(
+            searchText = searchText,
+            onSearchChange = { text ->
+                coroutineScope.launch {
+                    viewModel.onSearchTextChange(text)
+                }
+            },
+            searchProduct = { viewModel.searchProduct(searchText) }
+        )
+        when (val uiState: CatalogUiState = viewModel.catalogUiState) {
+            is CatalogUiState.Loading -> ProductLoading()
+            is CatalogUiState.Error -> ProductError()
+            is CatalogUiState.Success -> ProductGrid(
+                onAddToCart = viewModel::addProductToUser,
+                onFavorite = viewModel::favoriteProduct,
+                userRole = viewModel.userRole,
+                products = uiState.catalogProduct,
+                navigateToProduct = navigateToProduct
+            )
+        }
+    }
+
 }
 
 @Composable
@@ -145,7 +134,7 @@ fun SearchProductTopSection(
     ) {
         SearchBar(
             searchText = searchText,
-            onSearchChange = onSearchChange ,
+            onSearchChange = onSearchChange,
             searchProduct = searchProduct,
             placeholderText = stringResource(id = R.string.search_product_placeholder),
             modifier = Modifier.weight(1f)
@@ -157,11 +146,14 @@ fun SearchProductTopSection(
 
 @Composable
 fun ProductGrid(
+    onAddToCart: (String) -> Unit,
+    onFavorite: (String) -> Unit,
     products: CatalogProduct,
     navigateToProduct: (String) -> Unit,
     modifier: Modifier = Modifier,
+    userRole: String,
 ) {
-    if(products.products!!.isEmpty()) {
+    if (products.products.isEmpty()) {
         Column(
             modifier = modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
@@ -174,16 +166,17 @@ fun ProductGrid(
             columns = GridCells.Fixed(2),
             modifier = modifier.padding(horizontal = 10.dp)
         ) {
-            items(items = products.products, key = { it?.id!! }) { product ->
-                if (product != null) {
-                    SearchProductItem(
-                        product = product,
-                        navigateToProduct = navigateToProduct,
-                        modifier = Modifier
-                            .padding(10.dp)
-                            .clickable {}
-                    )
-                }
+            items(items = products.products, key = { it.id!! }) { product ->
+                SearchProductItem(
+                    onAddToCart = onAddToCart,
+                    onFavorite = onFavorite,
+                    userRole = userRole,
+                    product = product,
+                    navigateToProduct = navigateToProduct,
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .clickable {}
+                )
             }
         }
     }
@@ -291,7 +284,7 @@ fun FilterSearch(
 fun SearchProductScreenPreview() {
     NotasocialTheme {
         SearchProductScreen(
-            {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
+            {}
         )
     }
 }

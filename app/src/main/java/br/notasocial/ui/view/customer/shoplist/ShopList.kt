@@ -13,13 +13,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -29,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
@@ -37,82 +36,63 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import br.notasocial.R
-import br.notasocial.data.model.Category
-import br.notasocial.data.model.Social.Product
+import br.notasocial.data.model.Catalog.Category
+import br.notasocial.data.model.Catalog.Product
+import br.notasocial.data.model.Social.ShoppingListResponse
 import br.notasocial.ui.AppViewModelProvider
-import br.notasocial.ui.NotaSocialBottomAppBar
-import br.notasocial.ui.NotaSocialTopAppBar
 import br.notasocial.ui.components.product.ShopListItem
+import br.notasocial.ui.components.store.InputField
+import br.notasocial.ui.components.store.MaskVisualTransformation
 import br.notasocial.ui.navigation.NavigationDestination
 import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.interFamily
 import br.notasocial.ui.theme.ralewayFamily
-import br.notasocial.ui.viewmodel.consumidor.shoplist.ShopListViewModel
+import br.notasocial.ui.utils.formatDistance
+import br.notasocial.ui.utils.formatPrice
+import br.notasocial.ui.utils.textTitleCase
+import br.notasocial.ui.viewmodel.customer.shoplist.ShopListViewModel
+import java.util.Locale
 
 object ShopListDestination : NavigationDestination {
     override val route = "shop_list"
     override val title = "Lista de Produtos"
 }
 
+
+
 @Composable
 fun ShopListScreen(
-    navigateToBuscarProduto: () -> Unit,
-    navigateToEstabelecimentos: () -> Unit,
-    navigateToRanking: () -> Unit,
-    navigateToFavoritos: () -> Unit,
-    navigateToShoplist: () -> Unit,
-    navigateToCadastrarNota: () -> Unit,
-    navigateToLogin: () -> Unit,
-    navigateToRegistrar: () -> Unit,
-    navigateToHome: () -> Unit,
-    navigateToPerfilProprio: () -> Unit,
     modifier: Modifier = Modifier,
+    navigateToHome: () -> Unit,
     viewModel: ShopListViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
-    val products = viewModel.products
-    Scaffold(
-        topBar = {
-            NotaSocialTopAppBar(
-                navigateToBuscarProduto = navigateToBuscarProduto,
-                navigateToEstabelecimentos = navigateToEstabelecimentos,
-                navigateToRanking = navigateToRanking,
-                navigateToFavoritos = navigateToFavoritos,
-                navigateToShoplist = navigateToShoplist,
-                navigateToCadastrarNota = navigateToCadastrarNota,
-                navigateToLogin = navigateToLogin,
-                navigateToRegistrar = navigateToRegistrar,
-                navigateToHome = navigateToHome
-            )
-        },
-        bottomBar = {
-            NotaSocialBottomAppBar(
-                navigateToHome = navigateToHome,
-                navigateToBuscarProduto = navigateToBuscarProduto,
-                navigateToPerfilProprio = navigateToPerfilProprio
-            )
-        }
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .background(color = Color.hsl(0f, 0f, .97f, 1f))
     ) {
         Column(
-            modifier = modifier
-                .padding(it)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .background(color = Color.hsl(0f, 0f, .97f, 1f))
+            modifier = Modifier.fillMaxSize()
         ) {
-            Column(
-                modifier = Modifier
-            ) {
-                if (products.isEmpty()) {
-                    EmptyShopList()
-                } else {
-                    ShopListGrid(
-                        products = products
-                    )
-                    ShopListSummary(
-                        products = products
-                    )
-                    ShopListDistance()
-                }
+            if (viewModel.products.isEmpty()) {
+                EmptyShopList(
+                    navigateToHome = navigateToHome
+                )
+            } else {
+                ShopListGrid(
+                    onRemoveClick = viewModel::removeProductsToShoppingList,
+                    products = viewModel.products
+                )
+                ShopListSummary(
+                    products = viewModel.products
+                )
+                ShopListDistance(
+                    cep = viewModel.cep,
+                    shoppingListInfo = viewModel.shoppingListInfo,
+                    onCalculateDistance = viewModel::calculateDistance,
+                    onCepChange = viewModel::onCepChange
+                )
             }
         }
     }
@@ -120,7 +100,8 @@ fun ShopListScreen(
 
 @Composable
 fun EmptyShopList(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navigateToHome: () -> Unit
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -168,7 +149,7 @@ fun EmptyShopList(
             )
         }
         TextButton(
-            onClick = {},
+            onClick = navigateToHome,
             shape = RoundedCornerShape(10.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.White,
@@ -193,6 +174,7 @@ fun EmptyShopList(
 
 @Composable
 fun ShopListGrid(
+    onRemoveClick: (String) -> Unit,
     products: List<Product>,
     modifier: Modifier = Modifier
 ) {
@@ -210,7 +192,8 @@ fun ShopListGrid(
         products.forEach { product ->
             ShopListItem(
                 product = product,
-                modifier = Modifier.padding(vertical = 3.dp)
+                modifier = Modifier.padding(vertical = 3.dp),
+                onRemoveClick = onRemoveClick
             )
         }
     }
@@ -221,6 +204,7 @@ fun ShopListSummary(
     products: List<Product>,
     modifier: Modifier = Modifier
 ) {
+    val formattedPrice = String.format(Locale("pt", "BR"), "R$%.2f", products.sumOf { it.price!! })
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -252,45 +236,24 @@ fun ShopListSummary(
                     fontFamily = ralewayFamily
                 )
                 Text(
-                    text = "R$${products.sumOf { it.price }}",
+                    text = formattedPrice,
                     fontSize = 12.sp,
                     color = Color.Black,
                     fontWeight = FontWeight.Bold,
                     fontFamily = interFamily
                 )
             }
-            Divider(
-                thickness = 3.dp,
-                color = Color.hsl(0f, 0f, .97f, 1f),
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "Estabelecimento",
-                    fontSize = 12.sp,
-                    color = Color.Black,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = ralewayFamily
-                )
-                Text(
-                    text = "Carrefour",
-                    fontSize = 12.sp,
-                    color = Color.Black,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = ralewayFamily
-                )
-            }
-
         }
     }
 }
 
 @Composable
 fun ShopListDistance(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    cep: String,
+    onCepChange: (String) -> Unit,
+    onCalculateDistance: () -> Unit,
+    shoppingListInfo: ShoppingListResponse?,
 ) {
     Column(
         modifier = modifier.fillMaxWidth()
@@ -309,21 +272,42 @@ fun ShopListDistance(
                 .background(color = Color.White)
                 .padding(15.dp)
         ) {
-            Text(
-                text = "CEP",
-                color = Color.Black,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                fontFamily = ralewayFamily,
-                modifier = Modifier.padding(bottom = 3.dp)
-            )
-            OutlinedTextField(
-                value = "",
-                onValueChange = {},
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(35.dp)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                InputField(
+                    text = "CEP",
+                    value = cep,
+                    onValueChange = {
+                        if (it.length <= NumberDefaults.INPUT_LENGTH) {
+                            onCepChange(it)
+                        }
+                    },
+                    visualTransformation = MaskVisualTransformation(NumberDefaults.MASK),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier
+                        .weight(2f)
+                        .padding(bottom = 20.dp)
+                )
+                Button(
+                    onClick = onCalculateDistance,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(40.dp)
+                        .padding(start = 10.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.hsl(123f, .63f, .33f, 1f)
+                    )
+                ) {
+                    Text(
+                        text = "Buscar",
+                        fontFamily = ralewayFamily,
+                        fontSize = 14.sp
+                    )
+                }
+            }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -355,111 +339,46 @@ fun ShopListDistance(
                     modifier = Modifier.width(80.dp)
                 )
             }
-            Row(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = "Angeloni",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = ralewayFamily,
-                    textDecoration = TextDecoration.Underline,
-                    color = Color.hsl(123f, .63f, .33f, 1f),
-                    modifier = Modifier.weight(1f)
-                )
-                Text(
-                    text = "R$53,80",
-                    fontSize = 12.sp,
-                    color = Color.Black,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = interFamily,
-                    textAlign = TextAlign.Start,
-                    modifier = Modifier.width(80.dp)
-                )
-                Text(
-                    text = "2 - KM",
-                    fontSize = 12.sp,
-                    color = Color.Black,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = interFamily,
-                    textAlign = TextAlign.End,
-                    modifier = Modifier.width(80.dp)
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = "Nacional",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = ralewayFamily,
-                    textDecoration = TextDecoration.Underline,
-                    color = Color.hsl(123f, .63f, .33f, 1f),
-                    modifier = Modifier.weight(1f)
-                )
-                Text(
-                    text = "R$55,80",
-                    fontSize = 12.sp,
-                    color = Color.Black,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = interFamily,
-                    textAlign = TextAlign.Start,
-                    modifier = Modifier.width(80.dp)
-                )
-                Text(
-                    text = "3.3 - KM",
-                    fontSize = 12.sp,
-                    color = Color.Black,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = interFamily,
-                    textAlign = TextAlign.End,
-                    modifier = Modifier.width(80.dp)
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = "Carrefour",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = ralewayFamily,
-                    textDecoration = TextDecoration.Underline,
-                    color = Color.hsl(123f, .63f, .33f, 1f),
-                    modifier = Modifier.weight(1f)
-                )
-                Text(
-                    text = "R$52,80",
-                    fontSize = 12.sp,
-                    color = Color.Black,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = interFamily,
-                    textAlign = TextAlign.Start,
-                    modifier = Modifier.width(80.dp)
-                )
-                Text(
-                    text = "6.7 - KM",
-                    fontSize = 12.sp,
-                    color = Color.Black,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = interFamily,
-                    textAlign = TextAlign.End,
-                    modifier = Modifier.width(80.dp)
-                )
+            shoppingListInfo?.content?.forEach {
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = textTitleCase(it.branch.store.name),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = ralewayFamily,
+                        textDecoration = TextDecoration.Underline,
+                        color = Color.hsl(123f, .63f, .33f, 1f),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = formatPrice(it.totalPrice),
+                        fontSize = 12.sp,
+                        color = Color.Black,
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = interFamily,
+                        textAlign = TextAlign.Start,
+                        modifier = Modifier.width(80.dp)
+                    )
+                    Text(
+                        text = formatDistance(it.branch.distance),
+                        fontSize = 12.sp,
+                        color = Color.Black,
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = interFamily,
+                        textAlign = TextAlign.End,
+                        modifier = Modifier.width(80.dp)
+                    )
+                }
             }
         }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun ShopListScreenPreview() {
-    NotasocialTheme {
-        ShopListScreen(
-            {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
-        )
-    }
+object NumberDefaults {
+    const val MASK = "#####-###"
+    const val INPUT_LENGTH = 8 // Equals to "#####-###".count { it == '#' }
 }
 
 @Preview(showBackground = true)
@@ -471,28 +390,37 @@ fun ShopListGridPreview() {
             name = "Pao Forma Seven Boys",
             price = 6.69,
             category = Category(1, "Padaria", ""),
-            image = R.drawable.pao_forma,
-            isFavorite = true,
+            image = "",
+            code = "",
+            storeId = "",
+            unit = ""
         ),
         Product(
             id = "2",
             name = "Pao Forma Seven Boys",
             price = 6.69,
             category = Category(1, "Padaria", ""),
-            image = R.drawable.pao_forma,
-            isFavorite = true,
+            image = "",
+            code = "",
+            storeId = "",
+            unit = ""
         ),
         Product(
             id = "3",
             name = "Pao Forma Seven Boys",
             price = 6.69,
             category = Category(1, "Padaria", ""),
-            image = R.drawable.pao_forma,
-            isFavorite = true,
+            image = "",
+            code = "",
+            storeId = "",
+            unit = ""
         ),
     )
     NotasocialTheme {
-        ShopListGrid(products = mockProducts)
+        ShopListGrid(
+            products = mockProducts,
+            onRemoveClick = {}
+        )
     }
 }
 
@@ -506,24 +434,30 @@ fun ShopListSummaryPreview() {
                 name = "Pao Forma Seven Boys",
                 price = 6.69,
                 category = Category(1, "Padaria", ""),
-                image = R.drawable.pao_forma,
-                isFavorite = true,
+                image = "",
+                code = "",
+                storeId = "",
+                unit = ""
             ),
             Product(
                 id = "2",
                 name = "Pao Forma Seven Boys",
                 price = 6.69,
                 category = Category(1, "Padaria", ""),
-                image = R.drawable.pao_forma,
-                isFavorite = true,
+                image = "",
+                code = "",
+                storeId = "",
+                unit = ""
             ),
             Product(
                 id = "3",
                 name = "Pao Forma Seven Boys",
                 price = 6.69,
                 category = Category(1, "Padaria", ""),
-                image = R.drawable.pao_forma,
-                isFavorite = true,
+                image = "",
+                code = "",
+                storeId = "",
+                unit = ""
             ),
         )
         ShopListSummary(
@@ -532,18 +466,11 @@ fun ShopListSummaryPreview() {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun ShopListDistancePreview() {
-    NotasocialTheme {
-        ShopListDistance()
-    }
-}
 
 @Preview(showBackground = true)
 @Composable
 fun EmptyShopListPreview() {
     NotasocialTheme {
-        EmptyShopList()
+        EmptyShopList(navigateToHome = {})
     }
 }

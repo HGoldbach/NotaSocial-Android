@@ -16,33 +16,30 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import br.notasocial.R
-import br.notasocial.data.model.User.UserResponse
+import br.notasocial.data.model.Receipt.Receipt
 import br.notasocial.ui.AppViewModelProvider
-import br.notasocial.ui.components.profile.FollowUserItem
+import br.notasocial.ui.components.receipt.ReceiptItem
 import br.notasocial.ui.navigation.NavigationDestination
 import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.ralewayFamily
 import br.notasocial.ui.view.customer.searchproduct.FilterSearch
 import br.notasocial.ui.view.customer.searchproduct.SearchBar
-import br.notasocial.ui.viewmodel.customer.userprofile.FollowingViewModel
+import br.notasocial.ui.viewmodel.customer.userprofile.ReceiptsViewModel
 
-object FollowingDestination : NavigationDestination {
-    override val route = "userprofile_following"
-    override val title = "Seguindo"
+object PerfilNotasDestination : NavigationDestination {
+    override val route = "perfil_notas"
+    override val title = "Notas"
 }
 
 @Composable
-fun FollowingScreen(
-    navigateToProfile: (String) -> Unit,
+fun PerfilNotasScreen(
     modifier: Modifier = Modifier,
-    viewModel: FollowingViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: ReceiptsViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     Column(
         modifier = modifier
@@ -54,25 +51,24 @@ fun FollowingScreen(
                 .fillMaxSize()
                 .padding(horizontal = 15.dp)
         ) {
-            FollowingTopSection()
+            NotasTopSection()
             Spacer(modifier = Modifier.padding(10.dp))
-            FollowingGrid(
-                navigateToProfile = navigateToProfile,
-                users = viewModel.users
+            NotasGrid(
+                receipts = viewModel.receipts
             )
         }
     }
 }
 
 @Composable
-fun FollowingTopSection(
+fun NotasTopSection(
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier.fillMaxWidth()
     ) {
         Text(
-            text = stringResource(id = R.string.following_title),
+            text = "Notas",
             fontSize = 16.sp,
             color = Color.Black,
             fontWeight = FontWeight.SemiBold,
@@ -81,7 +77,7 @@ fun FollowingTopSection(
         )
         Row {
             SearchBar(
-                placeholderText = stringResource(id = R.string.following_input_placeholder),
+                placeholderText = "Buscar Nota",
                 searchText = "",
                 onSearchChange = {},
                 searchProduct = {},
@@ -94,19 +90,18 @@ fun FollowingTopSection(
 }
 
 @Composable
-fun FollowingGrid(
+fun NotasGrid(
     modifier: Modifier = Modifier,
-    users: List<UserResponse>,
-    navigateToProfile: (String) -> Unit
+    receipts: List<Receipt>
 ) {
-    if (users.isEmpty()) {
+    if (receipts.isEmpty()) {
         Column(
             modifier = modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "Nenhum usuário encontrado",
+                text = "Nenhuma nota cadastrada",
                 fontSize = 14.sp,
                 fontFamily = ralewayFamily,
                 fontWeight = FontWeight.Medium
@@ -115,60 +110,40 @@ fun FollowingGrid(
     } else {
         LazyVerticalGrid(
             modifier = modifier,
-            columns = GridCells.Fixed(3),
+            columns = GridCells.Fixed(2),
         ) {
-            items(items = users, key = { it.id }) { user ->
-                FollowUserItem(
-                    navigateToProfile = navigateToProfile,
-                    modifier = Modifier.padding(vertical = 12.dp),
-                    user = user
+            items(items = receipts, key = { it.scannedAt }) { receipt ->
+                ReceiptItem(
+                    receipt = receipt,
+                    modifier = Modifier.padding(5.dp)
                 )
             }
         }
     }
 }
 
+
 @Preview(showBackground = true)
 @Composable
-fun FollowingScreenPreview() {
+fun PerfilNotasScreenPreview() {
     NotasocialTheme {
-        FollowingScreen(
-            {}
-        )
+        PerfilNotasScreen()
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun FollowingTopSectionPreview() {
+fun NotasTopSectionPreview() {
     NotasocialTheme {
-        FollowingTopSection()
+        NotasTopSection()
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun FollowingGridPreview() {
-    val mockUsers = listOf(
-        UserResponse(
-            firstName = "João",
-            lastName = "Silva",
-        ),
-        UserResponse(
-            firstName = "João",
-            lastName = "Silva",
-        ),
-        UserResponse(
-            firstName = "João",
-            lastName = "Silva",
-        ),
-        UserResponse(
-            firstName = "João",
-            lastName = "Silva",
-        )
-    )
-    NotasocialTheme {
-        FollowingGrid(users = mockUsers, navigateToProfile = {})
-    }
-}
-
+//@Preview(showBackground = true)
+//@Composable
+//fun NotasGridPreview() {
+//    NotasocialTheme {
+//        NotasGrid(receipts = viewModel.receipts)
+//    }
+//}
+//

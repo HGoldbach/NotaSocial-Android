@@ -1,4 +1,4 @@
-package br.notasocial.ui.view.consumidor.userprofile
+package br.notasocial.ui.view.customer.userprofile
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -33,13 +33,17 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.viewmodel.compose.viewModel
 import br.notasocial.R
+import br.notasocial.data.model.User.UserResponse
+import br.notasocial.ui.AppViewModelProvider
 import br.notasocial.ui.NotaSocialBottomAppBar
 import br.notasocial.ui.NotaSocialTopAppBar
 import br.notasocial.ui.components.profile.MenuItem
 import br.notasocial.ui.navigation.NavigationDestination
 import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.ralewayFamily
+import br.notasocial.ui.viewmodel.customer.userprofile.UserProfileViewModel
 
 object UserProfileHomeDestination : NavigationDestination {
     override val route = "userprofile_home"
@@ -48,75 +52,47 @@ object UserProfileHomeDestination : NavigationDestination {
 
 @Composable
 fun UserHomeScreen(
-    navigateToBuscarProduto: () -> Unit,
-    navigateToEstabelecimentos: () -> Unit,
-    navigateToRanking: () -> Unit,
     navigateToFavoritos: () -> Unit,
-    navigateToShoplist: () -> Unit,
-    navigateToCadastrarNota: () -> Unit,
-    navigateToLogin: () -> Unit,
-    navigateToRegistrar: () -> Unit,
-    navigateToHome: () -> Unit,
-    navigateToPerfilProprio: () -> Unit,
     navigateToNotas: () -> Unit,
     navigateToSeguindo: () -> Unit,
     navigateToSeguidores: () -> Unit,
     navigateToNotificacoes: () -> Unit,
     navigateToConta: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: UserProfileViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val scrollState = rememberScrollState()
-    Scaffold(
-        topBar = {
-            NotaSocialTopAppBar(
-                navigateToBuscarProduto = navigateToBuscarProduto,
-                navigateToEstabelecimentos = navigateToEstabelecimentos,
-                navigateToRanking = navigateToRanking,
-                navigateToFavoritos = navigateToFavoritos,
-                navigateToShoplist = navigateToShoplist,
-                navigateToCadastrarNota = navigateToCadastrarNota,
-                navigateToLogin = navigateToLogin,
-                navigateToRegistrar = navigateToRegistrar,
-                navigateToHome = navigateToHome
-            )
-        },
-        bottomBar = {
-            NotaSocialBottomAppBar(
-                navigateToHome = navigateToHome,
-                navigateToBuscarProduto = navigateToBuscarProduto,
-                navigateToPerfilProprio = navigateToPerfilProprio
-            )
-        }
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color.hsl(0f, 0f, .97f, 1f))
+            .verticalScroll(scrollState)
     ) {
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
-                .padding(it)
-                .background(Color.hsl(0f, 0f, .97f, 1f))
-                .verticalScroll(scrollState)
+                .padding(20.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(20.dp)
-            ) {
-                HomeTopSection()
-                HomeMenuSection(
-                    navigateToFavoritos = navigateToFavoritos,
-                    navigateToNotas = navigateToNotas,
-                    navigateToSeguindo = navigateToSeguindo,
-                    navigateToSeguidores = navigateToSeguidores,
-                    navigateToNotificacoes = navigateToNotificacoes,
-                    navigateToConta = navigateToConta,
-                    modifier = Modifier.padding(top = 32.dp)
-                )
-            }
+            HomeTopSection(
+                user = viewModel.user
+            )
+            HomeMenuSection(
+                navigateToFavoritos = navigateToFavoritos,
+                navigateToNotas = navigateToNotas,
+                navigateToSeguindo = navigateToSeguindo,
+                navigateToSeguidores = navigateToSeguidores,
+                navigateToNotificacoes = navigateToNotificacoes,
+                navigateToConta = navigateToConta,
+                modifier = Modifier.padding(top = 32.dp)
+            )
         }
     }
 }
 
 @Composable
 fun HomeTopSection(
+    user: UserResponse,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -153,7 +129,7 @@ fun HomeTopSection(
             }
         }
         Text(
-            text = "Jose maria".uppercase(),
+            text = "${user.firstName} ${user.lastName}".uppercase(),
             fontFamily = ralewayFamily,
             fontSize = 16.sp,
             color = Color.Black,
@@ -210,14 +186,12 @@ fun HomeMenuSection(
 }
 
 
-
-
 @Preview(showBackground = true)
 @Composable
 fun PerfilHomeScreenPreview() {
     NotasocialTheme {
         UserHomeScreen(
-            {},{},{},{},{},{},{},{},{},{},{},{},{},{},{}
+            {}, {}, {}, {}, {}, {}
         )
     }
 }
@@ -226,7 +200,13 @@ fun PerfilHomeScreenPreview() {
 @Composable
 fun PerfilHomeTopSectionPreview() {
     NotasocialTheme {
-        HomeTopSection()
+        val mockUser = UserResponse(
+            firstName = "Hiron",
+            lastName = "Goldbach"
+        )
+        HomeTopSection(
+            user = mockUser
+        )
     }
 }
 
@@ -235,7 +215,7 @@ fun PerfilHomeTopSectionPreview() {
 fun PerfilHomeMenuSectionPreview() {
     NotasocialTheme {
         HomeMenuSection(
-            {},{},{},{},{},{}
+            {}, {}, {}, {}, {}, {}
         )
     }
 }

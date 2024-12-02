@@ -1,4 +1,4 @@
-package br.notasocial.ui.view.consumidor.storepromotion
+package br.notasocial.ui.view.customer.storepromotion
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -19,17 +18,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import br.notasocial.ui.NotaSocialBottomAppBar
-import br.notasocial.ui.NotaSocialTopAppBar
+import androidx.lifecycle.viewmodel.compose.viewModel
+import br.notasocial.data.model.StoreDb.PromotionDb
+import br.notasocial.ui.AppViewModelProvider
 import br.notasocial.ui.components.store.StoreInfo
 import br.notasocial.ui.navigation.NavigationDestination
 import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.interFamily
 import br.notasocial.ui.theme.ralewayFamily
+import br.notasocial.ui.utils.formatPriceString
+import br.notasocial.ui.viewmodel.customer.storepromotion.StorePromotionViewModel
 
 object StorePromotionDestination : NavigationDestination {
     override val route = "store_promotion"
     override val title = "Estabelecimento Promoção"
+    const val promotionIdArg = "promotionId"
+    const val storeNameArg = "storeName"
+    val routeWithArgs = "${route}/{$promotionIdArg}/{$storeNameArg}"
 }
 
 // Provisorio
@@ -94,68 +99,37 @@ val promotions = listOf(
 
 @Composable
 fun StorePromotionScreen(
-    navigateToBuscarProduto: () -> Unit,
-    navigateToEstabelecimentos: () -> Unit,
-    navigateToRanking: () -> Unit,
-    navigateToFavoritos: () -> Unit,
-    navigateToShoplist: () -> Unit,
-    navigateToCadastrarNota: () -> Unit,
-    navigateToLogin: () -> Unit,
-    navigateToRegistrar: () -> Unit,
-    navigateToHome: () -> Unit,
-    navigateToPerfilProprio: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: StorePromotionViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
-   Scaffold(
-       topBar = {
-           NotaSocialTopAppBar(
-               navigateToBuscarProduto = navigateToBuscarProduto,
-               navigateToEstabelecimentos = navigateToEstabelecimentos,
-               navigateToRanking = navigateToRanking,
-               navigateToFavoritos = navigateToFavoritos,
-               navigateToShoplist = navigateToShoplist,
-               navigateToCadastrarNota = navigateToCadastrarNota,
-               navigateToLogin = navigateToLogin,
-               navigateToRegistrar = navigateToRegistrar,
-               navigateToHome = navigateToHome
-           )
-       },
-       bottomBar = {
-           NotaSocialBottomAppBar(
-               navigateToHome = navigateToHome,
-               navigateToBuscarProduto = navigateToBuscarProduto,
-               navigateToPerfilProprio = navigateToPerfilProprio
-           )
-       }
-   ) {
-       Column(
-           modifier = modifier
-               .padding(it)
-               .fillMaxSize()
-               .verticalScroll(rememberScrollState())
-               .background(color = Color.hsl(0f, 0f, .97f, 1f))
-       ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(20.dp)
-            ) {
-                StoreInfo(
-                    title = "Promoçao Carrefour",
-                    description = "Endereço - Av. Mal. Floriano Peixoto"
-                )
-                ProductPromotionSection(
-                    produtos = promotions
-                )
-            }
-       }
-   }
+    val uiState = viewModel.uiState
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .background(color = Color.hsl(0f, 0f, .97f, 1f))
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(20.dp)
+        ) {
+            StoreInfo(
+                title = "Promoçao ${viewModel.storeName}",
+            )
+            ProductPromotionSection(
+                products = uiState.products,
+                validity = uiState.promotion.validity,
+            )
+        }
+    }
 }
 
 @Composable
 fun ProductPromotionSection(
-    produtos: List<ProductPromotion>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    products: List<Pair<String, String>>,
+    validity: String,
 ) {
     Column(
         modifier = modifier.fillMaxWidth()
@@ -168,13 +142,13 @@ fun ProductPromotionSection(
             fontFamily = ralewayFamily,
             modifier = Modifier.padding(vertical = 40.dp)
         )
-        produtos.forEach { produto ->
+        products.forEach { product ->
             ProductPromotionItem(
-                produto = produto
+                product = product,
             )
         }
         Text(
-            text = "Promoção válida até 05 Maio 2024",
+            text = "Promoção válida até ${validity}",
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
             color = Color.Black,
@@ -189,22 +163,22 @@ fun ProductPromotionSection(
 
 @Composable
 fun ProductPromotionItem(
-    produto: ProductPromotion,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    product: Pair<String, String>
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = produto.nome,
+            text = product.first,
             fontSize = 13.sp,
             color = Color.Black,
             fontWeight = FontWeight.Normal,
             fontFamily = ralewayFamily
         )
         Text(
-            text = "R$${produto.preco}",
+            text = formatPriceString(product.second),
             fontSize = 13.sp,
             color = Color.Black,
             fontWeight = FontWeight.Light,
@@ -218,18 +192,6 @@ fun ProductPromotionItem(
 @Composable
 fun StorePromotionScreenPreview() {
     NotasocialTheme {
-        StorePromotionScreen(
-            {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ProductPromotionSectionPreview() {
-    NotasocialTheme {
-        ProductPromotionSection(
-            produtos = promotions
-        )
+        StorePromotionScreen()
     }
 }

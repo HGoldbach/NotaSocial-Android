@@ -1,4 +1,4 @@
-package br.notasocial.ui.view.consumidor.qrcode
+package br.notasocial.ui.view.customer.qrcode
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -48,106 +48,70 @@ object QrCodeDestination : NavigationDestination {
 
 @Composable
 fun QrCodeScreen(
-    navigateToHome: () -> Unit,
-    navigateToPerfilProprio: () -> Unit,
-    navigateToBuscarProduto: () -> Unit,
-    navigateToEstabelecimentos: () -> Unit,
-    navigateToRanking: () -> Unit,
-    navigateToFavoritos: () -> Unit,
-    navigateToShoplist: () -> Unit,
-    navigateToCadastrarNota: () -> Unit,
-    navigateToLogin: () -> Unit,
-    navigateToRegistrar: () -> Unit,
     onRequestPermission: () -> Unit,
     navigateToQrCodeResult: (String) -> Unit,
     textResult: MutableState<String>,
     modifier: Modifier = Modifier,
     viewModel: QrCodeViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
-    Scaffold(
-        topBar = {
-            NotaSocialTopAppBar(
-                navigateToBuscarProduto = navigateToBuscarProduto,
-                navigateToEstabelecimentos = navigateToEstabelecimentos,
-                navigateToRanking = navigateToRanking,
-                navigateToFavoritos = navigateToFavoritos,
-                navigateToShoplist = navigateToShoplist,
-                navigateToCadastrarNota = navigateToCadastrarNota,
-                navigateToLogin = navigateToLogin,
-                navigateToRegistrar = navigateToRegistrar,
-                navigateToHome = navigateToHome,
-            )
-        },
-        bottomBar = {
-            NotaSocialBottomAppBar(
-                navigateToHome = navigateToHome,
-                navigateToBuscarProduto = navigateToBuscarProduto,
-                navigateToPerfilProprio = navigateToPerfilProprio,
-            )
-        }
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color.hsl(0f, 0f, 0.97f, 1f)),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(it)
-                .background(Color.hsl(0f, 0f, 0.97f, 1f)),
+            modifier = Modifier.fillMaxHeight(),
+            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                modifier = Modifier.fillMaxHeight(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+            Box(
+                modifier = Modifier,
+                contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier,
-                    contentAlignment = Alignment.Center
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        QrCodeIcon(onRequestPermission)
-                    }
+                    QrCodeIcon(onRequestPermission)
                 }
-                Spacer(modifier = Modifier.height(24.dp))
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = "Faça a leitura do",
+                color = Color.hsl(123f, 0.66f, 0.33f, 1f), // Custom green color
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+            Row {
                 Text(
-                    text = "Faça a leitura do",
+                    text = "QRCODE",
+                    color = Color.hsl(123f, 0.66f, 0.33f, 1f), // Custom green color
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Black,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = " da sua nota",
                     color = Color.hsl(123f, 0.66f, 0.33f, 1f), // Custom green color
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center
                 )
-                Row {
-                    Text(
-                        text = "QRCODE",
-                        color = Color.hsl(123f, 0.66f, 0.33f, 1f), // Custom green color
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Black,
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        text = " da sua nota",
-                        color = Color.hsl(123f, 0.66f, 0.33f, 1f), // Custom green color
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
+            }
+            LaunchedEffect(key1 = textResult.value) {
+                if (textResult.value.isNotBlank()) {
+                    viewModel.setReceiptUrlId(textResult.value)
                 }
-                LaunchedEffect(key1 = textResult.value) {
-                    if (textResult.value.isNotBlank()) {
-                        viewModel.setReceiptUrlId(textResult.value)
-                    }
-                }
-                LaunchedEffect(key1 = viewModel.receiptUrl) {
-                    if (viewModel.receiptUrl.isNotBlank()) {
-                        navigateToQrCodeResult(viewModel.receiptUrl)
-                    }
+            }
+            LaunchedEffect(key1 = viewModel.receiptUrl) {
+                if (viewModel.receiptUrl.isNotBlank()) {
+                    navigateToQrCodeResult(viewModel.receiptUrl)
                 }
             }
         }
     }
-
-
 }
 
 

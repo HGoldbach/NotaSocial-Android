@@ -1,4 +1,4 @@
-package br.notasocial.ui.view.consumidor.userprofile
+package br.notasocial.ui.view.customer.userprofile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,7 +17,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -33,12 +32,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import br.notasocial.R
-import br.notasocial.ui.NotaSocialBottomAppBar
-import br.notasocial.ui.NotaSocialTopAppBar
+import br.notasocial.data.model.User.UserResponse
+import br.notasocial.ui.AppViewModelProvider
+import br.notasocial.ui.components.store.InputField
 import br.notasocial.ui.navigation.NavigationDestination
 import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.ralewayFamily
+import br.notasocial.ui.viewmodel.customer.userprofile.UserProfileViewModel
 
 object AccountDestination : NavigationDestination {
     override val route = "userprofile_account"
@@ -47,63 +49,56 @@ object AccountDestination : NavigationDestination {
 
 @Composable
 fun AccountScreen(
-    navigateToBuscarProduto: () -> Unit,
-    navigateToEstabelecimentos: () -> Unit,
-    navigateToRanking: () -> Unit,
-    navigateToFavoritos: () -> Unit,
-    navigateToShoplist: () -> Unit,
-    navigateToCadastrarNota: () -> Unit,
-    navigateToLogin: () -> Unit,
-    navigateToRegistrar: () -> Unit,
-    navigateToHome: () -> Unit,
-    navigateToPerfilProprio: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: UserProfileViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val scrollState = rememberScrollState()
-    Scaffold(
-        topBar = {
-            NotaSocialTopAppBar(
-                navigateToBuscarProduto = navigateToBuscarProduto,
-                navigateToEstabelecimentos = navigateToEstabelecimentos,
-                navigateToRanking = navigateToRanking,
-                navigateToFavoritos = navigateToFavoritos,
-                navigateToShoplist = navigateToShoplist,
-                navigateToCadastrarNota = navigateToCadastrarNota,
-                navigateToLogin = navigateToLogin,
-                navigateToRegistrar = navigateToRegistrar,
-                navigateToHome = navigateToHome
-            )
-        },
-        bottomBar = {
-            NotaSocialBottomAppBar(
-                navigateToHome = navigateToHome,
-                navigateToBuscarProduto = navigateToBuscarProduto,
-                navigateToPerfilProprio = navigateToPerfilProprio
-            )
-        }
+    val uiState = viewModel.uiState
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color.hsl(0f, 0f, .97f, 1f))
+            .verticalScroll(scrollState)
     ) {
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
-                .padding(it)
-                .background(Color.hsl(0f, 0f, .97f, 1f))
-                .verticalScroll(scrollState)
+                .padding(20.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(20.dp)
-            ) {
-                HomeTopSection()
-                AccountFormSection()
-            }
+            HomeTopSection(
+                user = viewModel.user
+            )
+            AccountFormSection(
+                user = viewModel.user,
+                firstNameValue = uiState.firstName,
+                lastNameValue = uiState.lastName,
+                emailValue = uiState.email,
+                passwordValue = uiState.password,
+                confirmPasswordValue = uiState.confirmPassword,
+                onFirstNameChange = viewModel::onFirstNameChange,
+                onLastNameChange = viewModel::onLastNameChange,
+                onPasswordChange = viewModel::onPasswordChange,
+                onConfirmPasswordChange = viewModel::onConfirmPasswordChange,
+                onSave = viewModel::updateUserProfile
+            )
         }
     }
 }
 
 @Composable
 fun AccountFormSection(
-    modifier: Modifier = Modifier
+    firstNameValue: String,
+    lastNameValue: String,
+    emailValue: String,
+    passwordValue: String,
+    confirmPasswordValue: String,
+    onFirstNameChange: (String) -> Unit,
+    onLastNameChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onConfirmPasswordChange: (String) -> Unit,
+    onSave: () -> Unit,
+    modifier: Modifier = Modifier,
+    user: UserResponse
 ) {
     var mudarSenha by remember {
         mutableStateOf(false)
@@ -111,16 +106,27 @@ fun AccountFormSection(
     Column(
         modifier = modifier.fillMaxWidth()
     ) {
-        AccountInputField(
+        InputField(
             text = "Nome",
-            modifier = Modifier.padding(top = 30.dp)
-        )
-        AccountInputField(
-            text = "Sobrenome",
+            value = firstNameValue,
+            placeholder = user.firstName,
+            onValueChange = onFirstNameChange,
             modifier = Modifier.padding(vertical = 12.dp)
         )
-        AccountInputField(
-            text = "Email"
+        InputField(
+            text = "Sobrenome",
+            value = lastNameValue,
+            placeholder = user.lastName,
+            onValueChange = onLastNameChange,
+            modifier = Modifier.padding(vertical = 5.dp)
+        )
+        InputField(
+            text = "Email",
+            value = emailValue,
+            enabled = false,
+            placeholder = user.email,
+            onValueChange = {},
+            modifier = Modifier.padding(vertical = 5.dp)
         )
         Row(
             modifier = Modifier.padding(top = 12.dp),
@@ -134,26 +140,33 @@ fun AccountFormSection(
                 modifier = Modifier.padding(end = 20.dp)
             )
             Icon(
-                painter =  painterResource(id =
-                    if(mudarSenha) {
+                painter = painterResource(
+                    id =
+                    if (mudarSenha) {
                         R.drawable.angle_up_solid
                     } else {
                         R.drawable.angle_down_solid
                     }
                 ),
                 contentDescription = "",
-                modifier = Modifier.size(14.dp).clickable {
-                    mudarSenha = !mudarSenha
-                }
+                modifier = Modifier
+                    .size(14.dp)
+                    .clickable {
+                        mudarSenha = !mudarSenha
+                    }
             )
         }
-        if(mudarSenha) {
-            AccountInputField(
+        if (mudarSenha) {
+            InputField(
                 text = "Senha",
+                value = passwordValue,
+                onValueChange = onPasswordChange,
                 modifier = Modifier.padding(vertical = 12.dp)
             )
-            AccountInputField(
+            InputField(
                 text = "Confirmar Senha",
+                value = confirmPasswordValue,
+                onValueChange = onConfirmPasswordChange
             )
         }
         Column(
@@ -163,13 +176,15 @@ fun AccountFormSection(
             horizontalAlignment = Alignment.End
         ) {
             TextButton(
-                onClick = {},
+                onClick = onSave,
                 shape = RoundedCornerShape(5.dp),
                 colors = ButtonDefaults.textButtonColors(
                     containerColor = Color.hsl(123f, .63f, .33f, 1f),
                     contentColor = Color.White
                 ),
-                modifier = Modifier.width(120.dp).height(45.dp)
+                modifier = Modifier
+                    .width(120.dp)
+                    .height(45.dp)
             ) {
                 Text(
                     text = "Salvar".uppercase(),
@@ -181,53 +196,15 @@ fun AccountFormSection(
         }
 
 
-
     }
 }
 
-@Composable
-fun AccountInputField(
-    text: String,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Text(
-            text = text,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold,
-            fontFamily = ralewayFamily,
-            modifier = Modifier.padding(bottom = 5.dp)
-        )
-        OutlinedTextField(
-            value = "",
-            onValueChange = {},
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.hsl(0f, 0f, .85f, 1f),
-                unfocusedBorderColor = Color.hsl(0f, 0f, .85f, 1f),
-            ),
-            modifier = Modifier.fillMaxWidth().height(45.dp)
-        )
-    }
-}
+
 
 @Preview(showBackground = true)
 @Composable
 fun AccountScreenPreview() {
     NotasocialTheme {
-        AccountScreen(
-            {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun AccountInputFieldPreview() {
-    NotasocialTheme {
-        AccountInputField(
-            text = "Nome"
-        )
+        AccountScreen()
     }
 }

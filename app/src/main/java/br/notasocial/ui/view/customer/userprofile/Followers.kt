@@ -31,18 +31,18 @@ import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.ralewayFamily
 import br.notasocial.ui.view.customer.searchproduct.FilterSearch
 import br.notasocial.ui.view.customer.searchproduct.SearchBar
-import br.notasocial.ui.viewmodel.customer.userprofile.FollowingViewModel
+import br.notasocial.ui.viewmodel.customer.userprofile.FollowersViewModel
 
-object FollowingDestination : NavigationDestination {
-    override val route = "userprofile_following"
-    override val title = "Seguindo"
+object FollowersDestination : NavigationDestination {
+    override val route = "userprofile_followers"
+    override val title = "Seguidores"
 }
 
 @Composable
-fun FollowingScreen(
+fun FollowersScreen(
     navigateToProfile: (String) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: FollowingViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: FollowersViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     Column(
         modifier = modifier
@@ -54,25 +54,25 @@ fun FollowingScreen(
                 .fillMaxSize()
                 .padding(horizontal = 15.dp)
         ) {
-            FollowingTopSection()
+            FollowersTopSection()
             Spacer(modifier = Modifier.padding(10.dp))
-            FollowingGrid(
-                navigateToProfile = navigateToProfile,
-                users = viewModel.users
+            FollowesGrid(
+                followers = viewModel.user,
+                navigateToProfile = navigateToProfile
             )
         }
     }
 }
 
 @Composable
-fun FollowingTopSection(
+fun FollowersTopSection(
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier.fillMaxWidth()
     ) {
         Text(
-            text = stringResource(id = R.string.following_title),
+            text = stringResource(id = R.string.followers_title),
             fontSize = 16.sp,
             color = Color.Black,
             fontWeight = FontWeight.SemiBold,
@@ -81,7 +81,7 @@ fun FollowingTopSection(
         )
         Row {
             SearchBar(
-                placeholderText = stringResource(id = R.string.following_input_placeholder),
+                placeholderText = stringResource(id = R.string.followers_input_placeholder),
                 searchText = "",
                 onSearchChange = {},
                 searchProduct = {},
@@ -94,12 +94,12 @@ fun FollowingTopSection(
 }
 
 @Composable
-fun FollowingGrid(
+fun FollowesGrid(
+    navigateToProfile: (String) -> Unit,
     modifier: Modifier = Modifier,
-    users: List<UserResponse>,
-    navigateToProfile: (String) -> Unit
+    followers: List<UserResponse>
 ) {
-    if (users.isEmpty()) {
+    if (followers.isEmpty()) {
         Column(
             modifier = modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -117,7 +117,7 @@ fun FollowingGrid(
             modifier = modifier,
             columns = GridCells.Fixed(3),
         ) {
-            items(items = users, key = { it.id }) { user ->
+            items(items = followers, key = { it.id }) { user ->
                 FollowUserItem(
                     navigateToProfile = navigateToProfile,
                     modifier = Modifier.padding(vertical = 12.dp),
@@ -126,13 +126,14 @@ fun FollowingGrid(
             }
         }
     }
+
 }
 
 @Preview(showBackground = true)
 @Composable
-fun FollowingScreenPreview() {
+fun FollowersScreenPreview() {
     NotasocialTheme {
-        FollowingScreen(
+        FollowersScreen(
             {}
         )
     }
@@ -140,35 +141,37 @@ fun FollowingScreenPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun FollowingTopSectionPreview() {
+fun FollowersTopSectionPreview() {
     NotasocialTheme {
-        FollowingTopSection()
+        FollowersTopSection()
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun FollowingGridPreview() {
-    val mockUsers = listOf(
-        UserResponse(
-            firstName = "João",
-            lastName = "Silva",
-        ),
-        UserResponse(
-            firstName = "João",
-            lastName = "Silva",
-        ),
-        UserResponse(
-            firstName = "João",
-            lastName = "Silva",
-        ),
-        UserResponse(
-            firstName = "João",
-            lastName = "Silva",
-        )
-    )
+fun SeguidoresGridPreview() {
     NotasocialTheme {
-        FollowingGrid(users = mockUsers, navigateToProfile = {})
+        val mockUsers = listOf(
+            UserResponse(
+                firstName = "João",
+                lastName = "Silva",
+            ),
+            UserResponse(
+                firstName = "João",
+                lastName = "Silva",
+            ),
+            UserResponse(
+                firstName = "João",
+                lastName = "Silva",
+            ),
+            UserResponse(
+                firstName = "João",
+                lastName = "Silva",
+            )
+        )
+        FollowesGrid(
+            navigateToProfile = {},
+            followers = mockUsers
+        )
     }
 }
-

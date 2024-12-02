@@ -40,8 +40,8 @@ import br.notasocial.ui.components.InputField
 import br.notasocial.ui.navigation.NavigationDestination
 import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.ralewayFamily
-import br.notasocial.ui.viewmodel.consumidor.signin.SignInUiState
-import br.notasocial.ui.viewmodel.consumidor.signin.SignInViewModel
+import br.notasocial.ui.viewmodel.customer.signin.SignInUiState
+import br.notasocial.ui.viewmodel.customer.signin.SignInViewModel
 
 object SignInDestination : NavigationDestination {
     override val route = "signin"

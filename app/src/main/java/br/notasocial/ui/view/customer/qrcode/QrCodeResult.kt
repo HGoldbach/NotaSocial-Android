@@ -1,4 +1,4 @@
-package br.notasocial.ui.view.consumidor.qrcode
+package br.notasocial.ui.view.customer.qrcode
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -48,16 +48,6 @@ object QrCodeResultDestination : NavigationDestination {
 
 @Composable
 fun QrCodeResultScreen(
-    navigateToHome: () -> Unit,
-    navigateToPerfilProprio: () -> Unit,
-    navigateToBuscarProduto: () -> Unit,
-    navigateToEstabelecimentos: () -> Unit,
-    navigateToRanking: () -> Unit,
-    navigateToFavoritos: () -> Unit,
-    navigateToShoplist: () -> Unit,
-    navigateToCadastrarNota: () -> Unit,
-    navigateToLogin: () -> Unit,
-    navigateToRegistrar: () -> Unit,
     onRequestPermission: () -> Unit,
     textResult: MutableState<String>,
     navigateToQrCode: () -> Unit,
@@ -66,47 +56,27 @@ fun QrCodeResultScreen(
     viewModel: QrCodeResultViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val uiState: ReceiptUiState = viewModel.receiptUiState
-    Scaffold(
-        topBar = {
-            NotaSocialTopAppBar(
-                navigateToBuscarProduto = navigateToBuscarProduto,
-                navigateToEstabelecimentos = navigateToEstabelecimentos,
-                navigateToRanking = navigateToRanking,
-                navigateToFavoritos = navigateToFavoritos,
-                navigateToShoplist = navigateToShoplist,
-                navigateToCadastrarNota = navigateToCadastrarNota,
-                navigateToLogin = navigateToLogin,
-                navigateToRegistrar = navigateToRegistrar,
-                navigateToHome = navigateToHome,
-            )
-        },
-        bottomBar = {
-            NotaSocialBottomAppBar(
-                navigateToHome = navigateToHome,
-                navigateToBuscarProduto = navigateToBuscarProduto,
-                navigateToPerfilProprio = navigateToPerfilProprio,
-            )
-        }
-    ) {
-        when (uiState) {
-            is ReceiptUiState.Loading -> LoadingScreen(
-                modifier = Modifier.padding(it)
-            )
-            is ReceiptUiState.Error -> QrCodeErrorScreen(
-                onRequestPermission = onRequestPermission,
-                textResult = textResult,
-                receiptUrl = viewModel.receiptUrl,
-                setReceiptUrlId = {
-                    viewModel.setReceiptUrlId(it)
-                },
-                navigateToQrCodeResult = navigateToQrCodeResult,
-                modifier = Modifier.padding(it)
-            )
-            is ReceiptUiState.Success -> QrCodeSuccessScreen(
-                navigateToQrcode = navigateToQrCode,
-                modifier = Modifier.padding(it)
-            )
-        }
+
+    when (uiState) {
+        is ReceiptUiState.Loading -> LoadingScreen(
+            modifier = modifier
+        )
+
+        is ReceiptUiState.Error -> QrCodeErrorScreen(
+            onRequestPermission = onRequestPermission,
+            textResult = textResult,
+            receiptUrl = viewModel.receiptUrl,
+            setReceiptUrlId = {
+                viewModel.setReceiptUrlId(it)
+            },
+            navigateToQrCodeResult = navigateToQrCodeResult,
+            modifier = modifier
+        )
+
+        is ReceiptUiState.Success -> QrCodeSuccessScreen(
+            navigateToQrcode = navigateToQrCode,
+            modifier = modifier
+        )
     }
 
 
@@ -117,7 +87,9 @@ fun LoadingScreen(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier.fillMaxSize().background(Color.hsl(0f,0f,.97f,1f)),
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color.hsl(0f, 0f, .97f, 1f)),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {

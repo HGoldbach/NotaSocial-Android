@@ -1,8 +1,8 @@
-package br.notasocial.ui.view.consumidor.storeprofile
+package br.notasocial.ui.view.customer.storeprofile
 
-import android.location.Address
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,7 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -33,9 +32,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import br.notasocial.R
-import br.notasocial.ui.NotaSocialBottomAppBar
-import br.notasocial.ui.NotaSocialTopAppBar
+import br.notasocial.data.model.Store
+import br.notasocial.data.model.StoreDb.AddressDb
+import br.notasocial.data.model.StoreDb.PromotionDb
+import br.notasocial.ui.AppViewModelProvider
 import br.notasocial.ui.components.store.StoreAddressItem
 import br.notasocial.ui.components.store.StoreInfo
 import br.notasocial.ui.components.store.StoreMenu
@@ -43,10 +45,13 @@ import br.notasocial.ui.components.store.StorePromotionItem
 import br.notasocial.ui.navigation.NavigationDestination
 import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.ralewayFamily
+import br.notasocial.ui.viewmodel.customer.storeprofile.StoreProfileViewModel
 
 object StoreProfileDestination : NavigationDestination {
     override val route = "store_profile"
     override val title = "Estabelecimento Perfil"
+    const val storeIdArg = "storeId"
+    val routeWithArgs = "$route/{$storeIdArg}"
 }
 
 enum class StoreMenuItem {
@@ -54,184 +59,46 @@ enum class StoreMenuItem {
     ENDERECOS
 }
 
-// Provisorio
-data class Endereco(
-    val id: Int,
-    val estabelecimento: String,
-    val logo: Int,
-    val rua: String,
-    val numero: String,
-    val bairro: String,
-    val cidade: String,
-    val estado: String,
-    val cep: String,
-    val telefone: String,
-)
-
-val enderecos = listOf(
-    Endereco(
-        id = 1,
-        estabelecimento = "Carrefour",
-        logo = R.drawable.carrefour_logo,
-        rua = "Av. Mal. Floriano Peixoto",
-        numero = "3031",
-        bairro = "Rebouças",
-        cidade = "Curitiba",
-        estado = "PR",
-        cep = "80220-000",
-        telefone = "(11) 3004-2222"
-    ),
-    Endereco(
-        id = 2,
-        estabelecimento = "Carrefour",
-        logo = R.drawable.carrefour_logo,
-        rua = "Av. Paraná",
-        numero = "3031",
-        bairro = "Rebouças",
-        cidade = "Curitiba",
-        estado = "PR",
-        cep = "80220-000",
-        telefone = "(11) 3004-2222"
-    ),
-    Endereco(
-        id = 3,
-        estabelecimento = "Carrefour",
-        logo = R.drawable.carrefour_logo,
-        rua = "R. Dep. Heitor Alencar Furtado",
-        numero = "3031",
-        bairro = "Rebouças",
-        cidade = "Curitiba",
-        estado = "PR",
-        cep = "80220-000",
-        telefone = "(11) 3004-2222"
-    ),
-    Endereco(
-        id = 4,
-        estabelecimento = "Carrefour",
-        logo = R.drawable.carrefour_logo,
-        rua = "Av. Presidente Arthur",
-        numero = "3031",
-        bairro = "Rebouças",
-        cidade = "Curitiba",
-        estado = "PR",
-        cep = "80220-000",
-        telefone = "(11) 3004-2222"
-    ),
-    Endereco(
-        id = 5,
-        estabelecimento = "Carrefour",
-        logo = R.drawable.carrefour_logo,
-        rua = "Av. Mal. Floriano Peixoto",
-        numero = "3031",
-        bairro = "Rebouças",
-        cidade = "Curitiba",
-        estado = "PR",
-        cep = "80220-000",
-        telefone = "(11) 3004-2222"
-    ),
-    Endereco(
-        id = 6,
-        estabelecimento = "Carrefour",
-        logo = R.drawable.carrefour_logo,
-        rua = "Av. Paraná",
-        numero = "3031",
-        bairro = "Rebouças",
-        cidade = "Curitiba",
-        estado = "PR",
-        cep = "80220-000",
-        telefone = "(11) 3004-2222"
-    ),
-    Endereco(
-        id = 7,
-        estabelecimento = "Carrefour",
-        logo = R.drawable.carrefour_logo,
-        rua = "R. Dep. Heitor Alencar Furtado",
-        numero = "3031",
-        bairro = "Rebouças",
-        cidade = "Curitiba",
-        estado = "PR",
-        cep = "80220-000",
-        telefone = "(11) 3004-2222"
-    ),
-    Endereco(
-        id = 8,
-        estabelecimento = "Carrefour",
-        logo = R.drawable.carrefour_logo,
-        rua = "Av. Presidente Arthur",
-        numero = "3031",
-        bairro = "Rebouças",
-        cidade = "Curitiba",
-        estado = "PR",
-        cep = "80220-000",
-        telefone = "(11) 3004-2222"
-    ),
-)
-
 @Composable
 fun StoreProfileScreen(
-    navigateToBuscarProduto: () -> Unit,
-    navigateToEstabelecimentos: () -> Unit,
-    navigateToRanking: () -> Unit,
-    navigateToFavoritos: () -> Unit,
-    navigateToShoplist: () -> Unit,
-    navigateToCadastrarNota: () -> Unit,
-    navigateToLogin: () -> Unit,
-    navigateToRegistrar: () -> Unit,
-    navigateToHome: () -> Unit,
-    navigateToPerfilProprio: () -> Unit,
-    navigateToEstabelecimentoPromocao: () -> Unit,
-    modifier: Modifier = Modifier
+    navigateToPromotion: (Int, String) -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: StoreProfileViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     var selectedMenuItem by remember {
         mutableStateOf(StoreMenuItem.PROMOCOES)
     }
     val scrollState = rememberScrollState()
-    Scaffold(
-        topBar = {
-            NotaSocialTopAppBar(
-                navigateToBuscarProduto = navigateToBuscarProduto,
-                navigateToEstabelecimentos = navigateToEstabelecimentos,
-                navigateToRanking = navigateToRanking,
-                navigateToFavoritos = navigateToFavoritos,
-                navigateToShoplist = navigateToShoplist,
-                navigateToCadastrarNota = navigateToCadastrarNota,
-                navigateToLogin = navigateToLogin,
-                navigateToRegistrar = navigateToRegistrar,
-                navigateToHome = navigateToHome
-            )
-        },
-        bottomBar = {
-            NotaSocialBottomAppBar(
-                navigateToHome = navigateToHome,
-                navigateToBuscarProduto = navigateToBuscarProduto,
-                navigateToPerfilProprio = navigateToPerfilProprio
-            )
-        }
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState)
+            .background(color = Color.hsl(0f, 0f, .97f, 1f))
     ) {
         Column(
-            modifier = modifier
-                .padding(it)
+            modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(scrollState)
-                .background(color = Color.hsl(0f, 0f, .97f, 1f))
+                .padding(20.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(20.dp)
-            ) {
-                StoreProfileTopSection()
-                StoreMenu(
-                    selectedMenuItem = selectedMenuItem,
-                    onMenuItemClick = { selectedMenuItem = it },
-                    modifier = Modifier.padding(vertical = 20.dp)
+            StoreProfileTopSection(
+                store = viewModel.store
+            )
+            StoreMenu(
+                selectedMenuItem = selectedMenuItem,
+                onMenuItemClick = { selectedMenuItem = it },
+                modifier = Modifier.padding(vertical = 20.dp)
+            )
+            when (selectedMenuItem) {
+                StoreMenuItem.PROMOCOES -> PromotionsSection(
+                    promotions = viewModel.promotions,
+                    navigateToPromotion = navigateToPromotion,
+                    storeName = "${viewModel.store.name}"
                 )
-                when (selectedMenuItem) {
-                    StoreMenuItem.PROMOCOES -> PromotionsSection(
-                        navigateToPromotion = navigateToEstabelecimentoPromocao,
-                    )
-                    StoreMenuItem.ENDERECOS -> AddressSection()
-                }
+
+                StoreMenuItem.ENDERECOS -> AddressSection(
+                    addresses = viewModel.addresses
+                )
             }
         }
     }
@@ -239,7 +106,8 @@ fun StoreProfileScreen(
 
 @Composable
 fun StoreProfileTopSection(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    store: Store
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -269,16 +137,17 @@ fun StoreProfileTopSection(
             }
         }
         StoreInfo(
-            title = "Carrefour".uppercase(),
-            description = "Estabelecimentos: 8"
+            title = "${store.name}".uppercase(),
         )
     }
 }
 
 @Composable
 fun PromotionsSection(
-    navigateToPromotion: () -> Unit,
-    modifier: Modifier = Modifier
+    navigateToPromotion: (Int, String) -> Unit,
+    modifier: Modifier = Modifier,
+    storeName: String,
+    promotions: List<PromotionDb>
 ) {
     Column(
         modifier = modifier
@@ -296,24 +165,42 @@ fun PromotionsSection(
             thickness = 5.dp,
             color = Color.hsl(0f, 0f, .97f, 1f)
         )
-        StorePromotionItem(
-            navigateToPromotion = navigateToPromotion
-        )
-        Divider(
-            thickness = 5.dp,
-            color = Color.hsl(0f, 0f, .97f, 1f),
-            modifier = Modifier.width(100.dp)
-        )
-        StorePromotionItem(
-            navigateToPromotion = navigateToPromotion
-        )
-
+        if (promotions.isEmpty()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Nenhuma promoção cadastrada",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    fontFamily = ralewayFamily
+                )
+            }
+        } else {
+            promotions.forEach {
+                StorePromotionItem(
+                    promotion = it,
+                    navigateToPromotion = navigateToPromotion,
+                    storeName = storeName
+                )
+                Divider(
+                    thickness = 5.dp,
+                    color = Color.hsl(0f, 0f, .97f, 1f),
+                    modifier = Modifier.width(100.dp)
+                )
+            }
+        }
     }
 }
 
 @Composable
 fun AddressSection(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    addresses: List<AddressDb>
 ) {
     Column(
         modifier = modifier
@@ -331,24 +218,41 @@ fun AddressSection(
             thickness = 5.dp,
             color = Color.hsl(0f, 0f, .97f, 1f)
         )
-        AddressGrid(
-            address = enderecos
-        )
+        if (addresses.isEmpty()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Nenhum endereço cadastrado",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    fontFamily = ralewayFamily
+                )
+            }
+        } else {
+            AddressGrid(
+                addresses = addresses
+            )
+        }
     }
 }
 
 @Composable
 fun AddressGrid(
-    address: List<Endereco>,
+    addresses: List<AddressDb>,
     modifier: Modifier = Modifier
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.height(500.dp)
     ) {
-        items(items = address, key = { it.id }) { endereco ->
+        items(items = addresses, key = { it.id }) { address ->
             StoreAddressItem(
-                endereco = endereco,
+                address = address,
                 modifier = Modifier.padding(10.dp)
             )
         }
@@ -361,7 +265,7 @@ fun AddressGrid(
 fun StoreProfileScreenPreview() {
     NotasocialTheme {
         StoreProfileScreen(
-            {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
+            {_, _ ->}
         )
     }
 }
@@ -371,7 +275,7 @@ fun StoreProfileScreenPreview() {
 @Composable
 fun StoreProfileTopSectionPreview() {
     NotasocialTheme {
-        StoreProfileTopSection()
+        StoreProfileTopSection(store = Store(name = "Carrefour"))
     }
 }
 
@@ -380,7 +284,9 @@ fun StoreProfileTopSectionPreview() {
 fun PromotionsSectionPreview() {
     NotasocialTheme {
         PromotionsSection(
-            {}
+            {_, _ ->},
+            promotions = emptyList(),
+            storeName = ""
         )
     }
 }
@@ -389,6 +295,6 @@ fun PromotionsSectionPreview() {
 @Composable
 fun AddressSectionPreview() {
     NotasocialTheme {
-        AddressSection()
+        AddressSection(addresses = emptyList())
     }
 }

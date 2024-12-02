@@ -1,5 +1,7 @@
-package br.notasocial.ui.view.consumidor.home
+package br.notasocial.ui.view.customer.home
 
+import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,12 +21,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -34,17 +37,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import br.notasocial.R
-import br.notasocial.data.model.Category
 import br.notasocial.ui.AppViewModelProvider
-import br.notasocial.ui.NotaSocialBottomAppBar
-import br.notasocial.ui.NotaSocialTopAppBar
 import br.notasocial.ui.components.category.CategoryItem
 import br.notasocial.ui.components.product.ProductItem
 import br.notasocial.ui.navigation.NavigationDestination
 import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.ralewayFamily
-import br.notasocial.ui.viewmodel.consumidor.home.HomeUiState
-import br.notasocial.ui.viewmodel.consumidor.home.HomeViewModel
+import br.notasocial.ui.viewmodel.customer.home.CategoryHomeUiState
+import br.notasocial.ui.viewmodel.customer.home.HomeUiState
+import br.notasocial.ui.viewmodel.customer.home.HomeViewModel
 
 object HomeDestination : NavigationDestination {
     override val route = "home"
@@ -53,65 +54,54 @@ object HomeDestination : NavigationDestination {
 
 @Composable
 fun HomeScreen(
-    navigateToBuscarProduto: () -> Unit,
-    navigateToEstabelecimentos: () -> Unit,
-    navigateToRanking: () -> Unit,
-    navigateToFavoritos: () -> Unit,
-    navigateToShoplist: () -> Unit,
-    navigateToCadastrarNota: () -> Unit,
-    navigateToLogin: () -> Unit,
-    navigateToRegistrar: () -> Unit,
-    navigateToHome: () -> Unit,
-    navigateToPerfilProprio: () -> Unit,
     navigateToProduct: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val scrollState = rememberScrollState()
     val uiState = viewModel.homeUiState
-    Scaffold(
-        topBar = {
-            NotaSocialTopAppBar(
-                navigateToBuscarProduto = navigateToBuscarProduto,
-                navigateToEstabelecimentos = navigateToEstabelecimentos,
-                navigateToRanking = navigateToRanking,
-                navigateToFavoritos = navigateToFavoritos,
-                navigateToShoplist = navigateToShoplist,
-                navigateToCadastrarNota = navigateToCadastrarNota,
-                navigateToLogin = navigateToLogin,
-                navigateToRegistrar = navigateToRegistrar,
-                navigateToHome = navigateToHome
-            )
-        },
-        bottomBar = {
-            NotaSocialBottomAppBar(
-                navigateToHome = navigateToHome,
-                navigateToBuscarProduto = navigateToBuscarProduto,
-                navigateToPerfilProprio = navigateToPerfilProprio
-            )
-        }
-    ) {
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .background(color = Color.hsl(0f, 0f, .97f, 1f))
-                .padding(it)
-                .verticalScroll(scrollState)
-        ) {
-            NotaSocialTitle()
-            Spacer(modifier = Modifier.height(25.dp))
-            SlideSection()
-            Spacer(modifier = Modifier.height(25.dp))
-            CategorySection(
-                categories = viewModel.listOfCategories
-            )
-            Spacer(modifier = Modifier.height(25.dp))
-            LastUpdatesSection(
-                uiState = uiState,
-                navigateToProduct = navigateToProduct
-            )
+    val categoryUiState = viewModel.categoryHomeUiState
+    val context = LocalContext.current
 
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collect { event ->
+            when (event) {
+                is HomeViewModel.UiEvent.AddToListSuccess -> {
+                    Toast.makeText(context, "Produto adicionado com sucesso!", Toast.LENGTH_SHORT)
+                        .show()
+                }
+                is HomeViewModel.UiEvent.FavoriteSuccess -> {
+                    Toast.makeText(context, "Produto favoritado com sucesso!", Toast.LENGTH_SHORT)
+                        .show()
+                }
+                is HomeViewModel.UiEvent.ShowError -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
+            }
         }
+    }
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(color = Color.hsl(0f, 0f, .97f, 1f))
+            .verticalScroll(scrollState)
+    ) {
+        NotaSocialTitle()
+        Spacer(modifier = Modifier.height(25.dp))
+        SlideSection()
+        Spacer(modifier = Modifier.height(25.dp))
+        CategorySection(
+            uiState = categoryUiState,
+        )
+        Spacer(modifier = Modifier.height(25.dp))
+        LastUpdatesSection(
+            uiState = uiState,
+            onFavorite = viewModel::favoriteProduct,
+            onAddToCart = viewModel::addProductToUser,
+            userRole = viewModel.userRole,
+            navigateToProduct = navigateToProduct
+        )
     }
 }
 
@@ -120,7 +110,9 @@ fun NotaSocialTitle(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(top = 15.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
@@ -214,8 +206,8 @@ fun SlideSection(
 
 @Composable
 fun CategorySection(
+    uiState: CategoryHomeUiState,
     modifier: Modifier = Modifier,
-    categories: List<Category>
 ) {
     Column(
         modifier = modifier
@@ -247,23 +239,43 @@ fun CategorySection(
             }
         }
     }
-    LazyRow(
-        modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = 5.dp)
-    ) {
-        items(items = categories, key = { it.id }) { category ->
-            CategoryItem(
-                text = category.name
-            )
-        }
+    when (uiState) {
+        is CategoryHomeUiState.Error -> Text(text = uiState.errorMessage)
+        is CategoryHomeUiState.Loading ->
+            Column(
+                modifier = Modifier.fillMaxWidth().height(100.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.loading_img),
+                    contentDescription = "",
+                    modifier = Modifier.size(100.dp)
+                )
+            }
+        is CategoryHomeUiState.Success ->
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 5.dp)
+            ) {
+                items(items = uiState.categories, key = { it.id }) { category ->
+                    CategoryItem(
+                        categoryImage = category.image,
+                        text = category.name
+                    )
+                }
+            }
     }
+
 }
 
 @Composable
 fun LastUpdatesSection(
     uiState: HomeUiState,
+    onFavorite: (String) -> Unit,
+    onAddToCart: (String) -> Unit,
     modifier: Modifier = Modifier,
-    navigateToProduct: (String) -> Unit
+    navigateToProduct: (String) -> Unit,
+    userRole: String
 ) {
     Column(
         modifier = modifier
@@ -297,18 +309,30 @@ fun LastUpdatesSection(
     }
     when (uiState) {
         is HomeUiState.Error -> Text(text = uiState.errorMessage)
-        is HomeUiState.Loading -> Text(text = "Loading")
+        is HomeUiState.Loading ->
+            Column(
+                modifier = Modifier.fillMaxWidth().height(100.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.loading_img),
+                    contentDescription = "",
+                    modifier = Modifier.size(100.dp)
+                )
+            }
         is HomeUiState.Success ->
             LazyRow(
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(horizontal = 16.dp)
             ) {
-                items(items = uiState.catalogProduct.products!!, key = { it?.id!! }) { product ->
-                    if (product == null) return@items
+                items(items = uiState.catalogProduct.products, key = { it.id!! }) { product ->
                     ProductItem(
-                        product,
+                        product =  product,
                         navigateToProductDetail = { navigateToProduct(product.id!!) },
-                        Modifier
+                        onFavorite = onFavorite,
+                        onAddToCart = onAddToCart,
+                        userRole = userRole,
+                        modifier = Modifier
                             .padding(8.dp)
                             .background(Color.White, shape = RoundedCornerShape(15.dp))
                             .padding(10.dp)
@@ -337,28 +361,10 @@ fun SlideSectionPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun CategorySectionPreview() {
-    NotasocialTheme {
-        val mockCategories = listOf(
-            Category(1, "Frutas", ""),
-            Category(2, "Verduras", ""),
-            Category(3, "Carnes", ""),
-            Category(4, "Laticínios", ""),
-            Category(5, "Doces", ""),
-            Category(6, "Outros", "")
-        )
-        CategorySection(
-            categories = mockCategories
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
 fun HomeScreenPreview() {
     NotasocialTheme {
         HomeScreen(
-            {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
+            {}
         )
     }
 }
