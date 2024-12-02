@@ -1,4 +1,4 @@
-package br.notasocial.ui.viewmodel.consumidor.signin
+package br.notasocial.ui.viewmodel.customer.signin
 
 import android.util.Log
 import android.util.Patterns
@@ -12,10 +12,7 @@ import br.notasocial.data.repository.AuthApiRepository
 import br.notasocial.data.repository.UserPreferencesRepository
 import com.auth0.android.jwt.JWT
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class SignInViewModel(
@@ -25,15 +22,6 @@ class SignInViewModel(
 
     var uiState by mutableStateOf(SignInUiState())
         private set
-
-    val uiPrefState: StateFlow<SignInUiState> =
-        userPreferencesRepository.currentUserData.map { userData ->
-            SignInUiState(token = userData.token, role = userData.role)
-        }.stateIn(
-            scope = viewModelScope,
-            started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5_000),
-            initialValue = SignInUiState()
-        )
 
     private val _uiEvent = MutableSharedFlow<UiEvent>()
     val uiEvent = _uiEvent.asSharedFlow()
@@ -69,6 +57,11 @@ class SignInViewModel(
         }
     }
 
+    private fun saveUserKeycloakId(keycloakId: String) {
+        viewModelScope.launch {
+            userPreferencesRepository.saveUserKeycloakId(keycloakId)
+        }
+    }
 
     private fun validateFields(): Boolean {
         val isEmailValid = Validator.isValidEmail(uiState.email)
@@ -115,8 +108,10 @@ class SignInViewModel(
                     val token = response.body()?.token
                     if (token !== null) {
                         val role = extractRoleFromToken(token)
+                        val keycloakId = JWT(token).subject
                         saveUserToken(token)
                         saveUserRole(role)
+                        saveUserKeycloakId(keycloakId!!)
                     }
                     Log.d("SignInViewModel", "Login bem-sucedido ${token}")
                     _uiEvent.emit(UiEvent.LoginSuccess)

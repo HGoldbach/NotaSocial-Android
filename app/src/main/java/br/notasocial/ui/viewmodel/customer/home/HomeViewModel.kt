@@ -1,4 +1,4 @@
-package br.notasocial.ui.viewmodel.customer.searchproduct
+package br.notasocial.ui.viewmodel.customer.home
 
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -7,97 +7,111 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.notasocial.data.model.Catalog.CatalogProduct
-import br.notasocial.data.model.Product
-import br.notasocial.data.repository.NotaSocialApiRepository
+import br.notasocial.data.model.Catalog.Category
 import br.notasocial.data.repository.ProductApiRepository
 import br.notasocial.data.repository.UserPreferencesRepository
+import br.notasocial.ui.viewmodel.customer.signin.SignInViewModel.UiEvent
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import okio.IOException
 import retrofit2.HttpException
-import java.io.IOException
 
-sealed interface CatalogUiState {
-    data class Success(val catalogProduct: CatalogProduct) : CatalogUiState
-    data class Error(val errorMessage: String): CatalogUiState
-    data object Loading: CatalogUiState
+/*
+sealed interface HomeUiState {
+    data class Success(val categories: List<Category>) : HomeUiState
+    data class Error(val message: String) : HomeUiState
+    data object Loading : HomeUiState
 }
 
-class SearchProductViewModel(
-    private val notaSocialRepository: NotaSocialApiRepository,
+ */
+
+sealed interface CategoryHomeUiState {
+    data class Success(val categories: List<Category>) : CategoryHomeUiState
+    data class Error(val errorMessage: String) : CategoryHomeUiState
+    data object Loading : CategoryHomeUiState
+}
+
+sealed interface HomeUiState {
+    data class Success(val catalogProduct: CatalogProduct) : HomeUiState
+    data class Error(val errorMessage: String) : HomeUiState
+    data object Loading : HomeUiState
+}
+
+class HomeViewModel(
     private val productApiRepository: ProductApiRepository,
-    private val userPreferencesRepository: UserPreferencesRepository
+    private val userPreferencesRepository: UserPreferencesRepository,
 ) : ViewModel() {
 
-    private val TAG = "SearchProductViewModel"
-    var catalogUiState: CatalogUiState by mutableStateOf(CatalogUiState.Loading)
+    private var TAG = "HOMEVIEWMODEL"
+
+    var homeUiState: HomeUiState by mutableStateOf(HomeUiState.Loading)
         private set
 
-    private val _searchText = MutableStateFlow("")
-    val searchText = _searchText.asStateFlow()
+    var categoryHomeUiState: CategoryHomeUiState by mutableStateOf(CategoryHomeUiState.Loading)
+        private set
 
-    private val _product = MutableStateFlow(Product())
-    val product = _product.asStateFlow()
+    var categories: List<Category> by mutableStateOf(listOf())
+        private set
 
     var userRole: String by mutableStateOf("")
     private var token: String by mutableStateOf("")
-
-    fun onSearchTextChange(text: String) {
-        _searchText.value = text
-    }
 
     private val _uiEvent = MutableSharedFlow<UiEvent>()
     val uiEvent = _uiEvent.asSharedFlow()
 
     sealed class UiEvent {
-        object AddToListSuccess: UiEvent()
-        object FavoriteSuccess: UiEvent()
-        data class ShowError(val message: String): UiEvent()
+        object AddToListSuccess : UiEvent()
+        object FavoriteSuccess : UiEvent()
+        data class ShowError(val message: String) : UiEvent()
     }
 
     init {
-        getCatalog()
+        fetchData()
         getUserRole()
         getToken()
     }
 
-    fun getCatalog() {
+    private fun fetchData() {
         viewModelScope.launch {
-            catalogUiState = CatalogUiState.Loading
-            catalogUiState = try {
-                val response = notaSocialRepository.getCatalog()
-                if (response.isSuccessful) {
-                    CatalogUiState.Success(response.body()!!)
-                } else {
-                    CatalogUiState.Error("Response not successfull ${response.code()}")
-                }
-            } catch (e: IOException) {
-                CatalogUiState.Error(e.message!!)
-            } catch (e: HttpException) {
-                CatalogUiState.Error(e.message!!)
-            }
-            Log.d("CatalogViewModel", catalogUiState.toString())
+            getLowestPrices()
+            getCategories()
         }
     }
 
-    fun searchProduct(value: String) {
-        if(value.isEmpty()) return
-
+    private fun getLowestPrices() {
         viewModelScope.launch {
-            catalogUiState = CatalogUiState.Loading
-            catalogUiState = try {
-                val response = productApiRepository.searchProduct(value)
+            homeUiState = HomeUiState.Loading
+            homeUiState = try {
+                val response = productApiRepository.getLowestPrice()
                 if (response.isSuccessful) {
-                    CatalogUiState.Success(response.body()!!)
+                    HomeUiState.Success(catalogProduct = response.body()!!)
                 } else {
-                    CatalogUiState.Error("Response not successfull ${response.code()}")
+                    HomeUiState.Error("Response not successfull ${response.code()}")
                 }
-            } catch(e: IOException) {
-                CatalogUiState.Error(e.message!!)
-            } catch(e: HttpException) {
-                CatalogUiState.Error(e.message!!)
+            } catch (e: IOException) {
+                HomeUiState.Error(e.message!!)
+            } catch (e: HttpException) {
+                HomeUiState.Error(e.message!!)
+            }
+            Log.i(TAG, "getLowestPrices: $homeUiState")
+        }
+    }
+
+    private fun getCategories() {
+        viewModelScope.launch {
+            categoryHomeUiState = CategoryHomeUiState.Loading
+            categoryHomeUiState = try {
+                val response = productApiRepository.getCategories()
+                if (response.isSuccessful) {
+                    CategoryHomeUiState.Success(response.body()!!.categories)
+                } else {
+                    CategoryHomeUiState.Error("Response not successfull ${response.code()}")
+                }
+            } catch (e: IOException) {
+                CategoryHomeUiState.Error(e.message!!)
+            } catch (e: HttpException) {
+                CategoryHomeUiState.Error(e.message!!)
             }
         }
     }
@@ -154,5 +168,5 @@ class SearchProductViewModel(
             }
         }
     }
-}
 
+}

@@ -1,4 +1,4 @@
-package br.notasocial.ui.viewmodel.consumidor.searchstore
+package br.notasocial.ui.viewmodel.customer.searchstore
 
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -35,7 +35,7 @@ class SearchStoreViewModel(
             storeUiState = try {
                 val response = storeApiRepository.getStores()
                 if (response.isSuccessful) {
-                    StoreUiState.Success(response.body()!!)
+                    StoreUiState.Success(response.body()!!.stores)
                 } else {
                     StoreUiState.Error("Response not successfull ${response.code()}")
                 }

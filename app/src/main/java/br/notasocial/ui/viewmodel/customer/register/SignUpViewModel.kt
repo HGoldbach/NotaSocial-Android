@@ -1,4 +1,4 @@
-package br.notasocial.ui.viewmodel.consumidor.register
+package br.notasocial.ui.viewmodel.customer.register
 
 import android.util.Log
 import android.util.Patterns

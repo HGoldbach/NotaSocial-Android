@@ -1,4 +1,4 @@
-package br.notasocial.ui.viewmodel.consumidor.signin
+package br.notasocial.ui.viewmodel.customer.signin
 
 data class SignInUiState(
     val email: String = "",
