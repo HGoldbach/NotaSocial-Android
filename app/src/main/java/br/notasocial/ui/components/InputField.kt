@@ -42,6 +42,7 @@ fun InputField(
     label: String,
     isError: Boolean = false,
     icon: ImageVector? = null,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     modifier: Modifier = Modifier
 ) {
@@ -94,14 +95,15 @@ fun InputField(
         isError = isError,
         keyboardOptions = keyboardOptions,
         singleLine = true,
-        visualTransformation = if (passwordVisible && (placeholder == "SENHA" || placeholder == "CONFIRMAR SENHA")) VisualTransformation.None else PasswordVisualTransformation(),
+        visualTransformation = if (placeholder == "SENHA" || placeholder == "CONFIRMAR SENHA") {
+            if (passwordVisible) visualTransformation else PasswordVisualTransformation()
+        } else {
+            visualTransformation
+        },
         modifier = modifier
             .fillMaxWidth()
-            .height(55.dp)
-            .background(Color.Transparent)
-            .semantics {
-                // Fornecer informações de acessibilidade
-            },
+            .height(60.dp)
+            .background(Color.Transparent),
         shape = RoundedCornerShape(15.dp),
         colors = OutlinedTextFieldDefaults.colors(
             focusedTextColor = Color.hsl(123f, .63f, .33f, 1f),
@@ -111,14 +113,16 @@ fun InputField(
             focusedContainerColor = Color.hsl(0f, 0f, 1f, .66f),
             unfocusedBorderColor = Color.Transparent,
             focusedBorderColor = Color.Transparent,
-            errorBorderColor = Color.Red
+            errorBorderColor = Color.Red,
+            errorSupportingTextColor = Color.White,
+            errorContainerColor = Color.hsl(0f, 1f, .44f, .46f)
         )
     )
 }
 
 @Preview
 @Composable
-fun InputFieldPreview() {
+fun InputFieldPasswordPreview() {
     var text by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("")}
     var confirmPassword by remember { mutableStateOf("")}
@@ -137,4 +141,26 @@ fun InputFieldPreview() {
         )
     }
 
+}
+
+@Preview
+@Composable
+fun InputFieldEmailPreview() {
+    var text by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("")}
+    var confirmPassword by remember { mutableStateOf("")}
+    var isError by remember { mutableStateOf(false) }
+    var isPasswordError by remember { mutableStateOf(false) }
+    var isConfirmPasswordError by remember { mutableStateOf(false) }
+
+    NotasocialTheme {
+        InputField(
+            value = text,
+            onValueChange = { text = it },
+            placeholder = "EMAIL",
+            label = "EMAIL",
+            icon = Icons.Default.Email,
+            modifier = Modifier
+        )
+    }
 }

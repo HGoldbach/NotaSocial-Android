@@ -17,6 +17,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -26,11 +28,12 @@ import androidx.compose.ui.unit.sp
 import br.notasocial.R
 import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.ralewayFamily
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 
 @Composable
 fun StoreInfo(
     title: String,
-    description: String,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -42,10 +45,16 @@ fun StoreInfo(
             color = Color.White,
             shape = CircleShape
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.carrefour_logo),
+            AsyncImage(
+                model = ImageRequest.Builder(context = LocalContext.current)
+                    .data("https://static.vecteezy.com/ti/vetor-gratis/p1/5766127-supermercado-loja-logo-vetor.jpg")
+                    .crossfade(true)
+                    .build(),
+                error = painterResource(R.drawable.ic_broken_image),
+                placeholder = painterResource(R.drawable.loading_img),
                 contentDescription = "",
-                modifier = Modifier.padding(30.dp)
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.fillMaxWidth()
             )
         }
         Text(
@@ -54,13 +63,6 @@ fun StoreInfo(
             fontSize = 24.sp,
             color = Color.Black,
             fontWeight = FontWeight.Bold,
-        )
-        Text(
-            text = description,
-            fontFamily = ralewayFamily,
-            fontSize = 12.sp,
-            color = Color.Black,
-            fontWeight = FontWeight.Normal,
         )
     }
 }
@@ -71,7 +73,6 @@ fun StoreInfoPreview() {
     NotasocialTheme {
         StoreInfo(
             title = "Carrefour".uppercase(),
-            description = "Estabelecimentos: 8"
         )
     }
 }
@@ -82,7 +83,6 @@ fun StoreInfoPreview2() {
     NotasocialTheme {
         StoreInfo(
             title = "Promoção Carrefour",
-            description = "Endereço - Av. Mal. Floariano Peixoto"
         )
     }
 }

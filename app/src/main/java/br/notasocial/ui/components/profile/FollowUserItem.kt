@@ -20,20 +20,22 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import br.notasocial.R
+import br.notasocial.data.model.User.UserResponse
 import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.ralewayFamily
 
 @Composable
 fun FollowUserItem(
-    navigateToProfile: () -> Unit,
-    modifier: Modifier = Modifier
+    navigateToProfile: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    user: UserResponse
 ) {
     Column(
-        modifier = modifier,
+        modifier = modifier.clickable { navigateToProfile(user.keycloakId) },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Surface(
-            modifier = Modifier.size(100.dp).clickable { navigateToProfile() },
+            modifier = Modifier.size(100.dp),
             color = Color.White,
             shape = CircleShape
         ) {
@@ -45,7 +47,7 @@ fun FollowUserItem(
             )
         }
         Text(
-            text = "Maria Jose",
+            text = "${user.firstName} ${user.lastName}",
             fontSize = 14.sp,
             color = Color.Black,
             fontFamily = ralewayFamily,
@@ -60,8 +62,14 @@ fun FollowUserItem(
 @Preview(showBackground = true)
 fun FollowUserItemPreview() {
     NotasocialTheme {
+
+        val mockUser = UserResponse(
+            firstName = "João",
+            lastName = "Silva",
+        )
         FollowUserItem(
-            navigateToProfile = {}
+            navigateToProfile = {},
+            user = mockUser
         )
     }
 }

@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.sp
 import br.notasocial.R
 import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.ralewayFamily
-import br.notasocial.ui.view.consumidor.storeprofile.StoreMenuItem
+import br.notasocial.ui.view.customer.storeprofile.StoreMenuItem
 
 @Composable
 fun StoreMenu(

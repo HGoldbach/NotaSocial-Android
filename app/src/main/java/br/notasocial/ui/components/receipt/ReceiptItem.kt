@@ -22,13 +22,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import br.notasocial.R
+import br.notasocial.data.model.Receipt.Receipt
 import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.interFamily
 import br.notasocial.ui.theme.ralewayFamily
 
 @Composable
 fun ReceiptItem(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    receipt: Receipt
 ) {
     var showDialog by remember {
         mutableStateOf(false)
@@ -63,7 +65,7 @@ fun ReceiptItem(
             fontFamily = ralewayFamily,
         )
         Text(
-            text = "01/05/2024",
+            text = "${receipt.scannedAt[2]}/${receipt.scannedAt[1]}/${receipt.scannedAt[0]}",
             fontSize = 11.sp,
             color = Color.Black,
             fontWeight = FontWeight.Normal,
@@ -71,6 +73,7 @@ fun ReceiptItem(
         )
         if(showDialog) {
             ReceiptDialog(
+                receipt = receipt,
                 onDismissRequest = {
                     showDialog = !showDialog
                 },
@@ -80,10 +83,10 @@ fun ReceiptItem(
     }
 }
 
-@Composable
-@Preview(showBackground = true)
-fun ReceiptItemPreview() {
-    NotasocialTheme {
-        ReceiptItem()
-    }
-}
+//@Composable
+//@Preview(showBackground = true)
+//fun ReceiptItemPreview() {
+//    NotasocialTheme {
+//        ReceiptItem(receipt = receipt)
+//    }
+//}

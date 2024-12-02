@@ -18,12 +18,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import br.notasocial.R
+import br.notasocial.data.model.User.UserResponse
 import br.notasocial.ui.theme.NotasocialTheme
+import br.notasocial.ui.theme.interFamily
 import br.notasocial.ui.theme.ralewayFamily
 
 @Composable
 fun ProfileInfo(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    user: UserResponse,
+    receitpsProductsTotal: Int,
+    receiptsTotal: Int
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -42,22 +47,22 @@ fun ProfileInfo(
             )
         }
         Text(
-            text = "Jose Maria".uppercase(),
+            text = "${user.firstName} ${user.lastName}".uppercase(),
             fontFamily = ralewayFamily,
             fontSize = 24.sp,
             color = Color.Black,
             fontWeight = FontWeight.Bold,
         )
         Text(
-            text = "Notas cadastradas: 30",
-            fontFamily = ralewayFamily,
+            text = "Notas cadastradas: $receiptsTotal",
+            fontFamily = interFamily,
             fontSize = 12.sp,
             color = Color.Black,
             fontWeight = FontWeight.Normal,
         )
         Text(
-            text = "Produtos cadastrados: 55",
-            fontFamily = ralewayFamily,
+            text = "Produtos cadastrados: $receitpsProductsTotal",
+            fontFamily = interFamily,
             fontSize = 12.sp,
             color = Color.Black,
             fontWeight = FontWeight.Normal,
@@ -70,6 +75,13 @@ fun ProfileInfo(
 @Preview(showBackground = true)
 fun ProfileInfoPreview() {
     NotasocialTheme {
-        ProfileInfo()
+        ProfileInfo(
+            user = UserResponse(
+                firstName = "Jose",
+                lastName = "Maria",
+            ),
+            receitpsProductsTotal = 10,
+            receiptsTotal = 10
+        )
     }
 }

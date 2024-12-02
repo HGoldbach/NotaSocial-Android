@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,19 +23,29 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import br.notasocial.R
-import br.notasocial.data.model.Catalog
+import br.notasocial.data.model.Catalog.Product
 import br.notasocial.ui.theme.ralewayFamily
+import br.notasocial.ui.utils.textTitleCase
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 
 @Composable
 fun SearchProductItem(
-    product: Catalog.Content,
-    modifier: Modifier = Modifier
+    product: Product,
+    navigateToProduct: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    onAddToCart: (String) -> Unit,
+    userRole: String,
+    onFavorite: (String) -> Unit
 ) {
     var isFavorite by remember {
         mutableStateOf(false)
@@ -43,15 +54,21 @@ fun SearchProductItem(
         colors = CardDefaults.cardColors(
             containerColor = Color.White
         ),
-        modifier = modifier
+        modifier = modifier.clickable { navigateToProduct(product.id!!) }
     ) {
         Box(
             modifier = Modifier.padding(10.dp)
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.loading_img),
+            AsyncImage(
+                model = ImageRequest.Builder(context = LocalContext.current)
+                    .data(product.image)
+                    .crossfade(true)
+                    .build(),
+                error = painterResource(R.drawable.ic_broken_image),
+                placeholder = painterResource(R.drawable.loading_img),
                 contentDescription = "",
-                modifier = Modifier.size(200.dp)
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.fillMaxWidth().height(150.dp).padding(20.dp)
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -59,7 +76,7 @@ fun SearchProductItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Surface(
-                    modifier = Modifier.size(40.dp),
+                    modifier = Modifier.size(40.dp).clickable { onAddToCart(product.id!!) },
                     color = Color.hsl(128f, .52f, .47f, .2f),
                     shape = RoundedCornerShape(10.dp)
                 ) {
@@ -87,19 +104,24 @@ fun SearchProductItem(
                     },
                     modifier = Modifier
                         .size(24.dp)
-                        .clickable { isFavorite = !isFavorite }
+                        .clickable {
+                            onFavorite(product.id!!)
+                            if(userRole == "CUSTOMER") isFavorite = !isFavorite
+                        }
                 )
             }
         }
         Text(
-            text = product.name!!,
+            text = textTitleCase(product.name!!),
             fontFamily = ralewayFamily,
             fontWeight = FontWeight.Medium,
             fontSize = 12.sp,
+            minLines = 2,
+            lineHeight = 1.em,
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 10.dp)
+                .padding(10.dp)
         )
     }
 }

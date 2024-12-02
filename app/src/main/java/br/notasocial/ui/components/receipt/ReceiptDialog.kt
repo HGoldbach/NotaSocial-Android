@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -24,26 +26,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import br.notasocial.R
-import br.notasocial.ui.theme.NotasocialTheme
+import br.notasocial.data.model.Receipt.Receipt
 import br.notasocial.ui.theme.interFamily
 import br.notasocial.ui.theme.ralewayFamily
+import br.notasocial.ui.utils.textTitleCase
+import br.notasocial.ui.utils.formatPrice
 
 @Composable
 fun ReceiptDialog(
     onDismissRequest: () -> Unit,
     description: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    receipt: Receipt
 ) {
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Card(
             modifier = modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+                .fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
                 containerColor = Color.White
@@ -85,7 +88,7 @@ fun ReceiptDialog(
                             fontFamily = ralewayFamily
                         )
                         Text(
-                            text = "01/05/2024",
+                            text = "${receipt.scannedAt[2]}/${receipt.scannedAt[1]}/${receipt.scannedAt[0]}",
                             fontSize = 13.sp,
                             color = Color.Black,
                             fontWeight = FontWeight.Light,
@@ -113,20 +116,22 @@ fun ReceiptDialog(
                 LazyColumn(
                     modifier = Modifier.height(200.dp)
                 ) {
-                    items(10) {
+                    items(items = receipt.items, key = { it.code }) { item ->
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = "Pao Forma Seven Boys",
+                                text = textTitleCase(item.name),
                                 fontSize = 12.sp,
+                                maxLines = 2,
                                 color = Color.Black,
                                 fontWeight = FontWeight.Normal,
-                                fontFamily = ralewayFamily
+                                fontFamily = ralewayFamily,
+                                modifier = Modifier.width(200.dp)
                             )
                             Text(
-                                text = "R$6,69",
+                                text = formatPrice(item.totalValue),
                                 fontSize = 12.sp,
                                 color = Color.Black,
                                 fontWeight = FontWeight.Normal,
@@ -152,14 +157,14 @@ fun ReceiptDialog(
                         modifier = Modifier
                     ) {
                         Text(
-                            text = "Total: R$",
+                            text = "Total: ",
                             fontSize = 14.sp,
                             color = Color.Black,
                             fontWeight = FontWeight.Bold,
                             fontFamily = ralewayFamily
                         )
                         Text(
-                            text = "40,14",
+                            text = formatPrice(receipt.totalValue),
                             fontSize = 14.sp,
                             color = Color.Black,
                             fontWeight = FontWeight.SemiBold,
@@ -187,13 +192,14 @@ fun ReceiptDialog(
     }
 }
 
-@Composable
-@Preview(showBackground = true)
-fun ReceiptDialogPreview() {
-    NotasocialTheme {
-        ReceiptDialog(
-            onDismissRequest = {},
-            description = ""
-        )
-    }
-}
+//@Composable
+//@Preview(showBackground = true)
+//fun ReceiptDialogPreview() {
+//    NotasocialTheme {
+//        ReceiptDialog(
+//            onDismissRequest = {},
+//            description = "",
+//            receipt = receipt
+//        )
+//    }
+//}

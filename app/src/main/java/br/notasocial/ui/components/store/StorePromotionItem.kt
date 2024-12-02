@@ -21,19 +21,21 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import br.notasocial.R
-import br.notasocial.ui.theme.NotasocialTheme
+import br.notasocial.data.model.StoreDb.AddressDb
+import br.notasocial.data.model.StoreDb.PromotionDb
 import br.notasocial.ui.theme.interFamily
 import br.notasocial.ui.theme.ralewayFamily
 
 @Composable
 fun StorePromotionItem(
-    navigateToPromotion: () -> Unit,
-    modifier: Modifier = Modifier
+    navigateToPromotion: (Int, String) -> Unit,
+    modifier: Modifier = Modifier,
+    storeName: String,
+    promotion: PromotionDb
 ) {
     Column(
         modifier = modifier.fillMaxWidth().padding(15.dp)
@@ -69,7 +71,7 @@ fun StorePromotionItem(
                 modifier = Modifier.size(12.dp)
             )
             Text(
-                text = "Valido até 05 Maio 2024",
+                text = "Valido até ${promotion.validity} ",
                 fontSize = 10.sp,
                 color = Color.Black,
                 fontWeight = FontWeight.Light,
@@ -86,7 +88,7 @@ fun StorePromotionItem(
             modifier = Modifier.padding(vertical = 8.dp)
         )
         Text(
-            text = "Diversos produtos em promoção na loja\ncarrefour - AV. Paraná",
+            text = "Diversos produtos em promoção na loja\n${promotion.establishment}",
             fontSize = 11.sp,
             fontWeight = FontWeight.Light,
             color = Color.Black,
@@ -101,17 +103,7 @@ fun StorePromotionItem(
             color = Color.hsl(123f, .63f, .33f, 1f),
             modifier = Modifier
                 .padding(top = 8.dp)
-                .clickable { navigateToPromotion() }
-        )
-    }
-}
-
-@Composable
-@Preview(showBackground = true)
-fun StorePromotionItemPreview() {
-    NotasocialTheme {
-        StorePromotionItem(
-            navigateToPromotion = {}
+                .clickable { navigateToPromotion(promotion.id, storeName) }
         )
     }
 }
