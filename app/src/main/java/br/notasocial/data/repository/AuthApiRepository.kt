@@ -13,6 +13,7 @@ interface AuthApiRepository {
     suspend fun registerStore(store: StoreAuthRequest): Response<StoreAuthResponse>
     suspend fun registerCustomer(customer: CustomerAuthRequest): Response<CustomerAuthResponse>
     suspend fun signIn(signIn: SignInAuthRequest): Response<SignInAuthResponse>
+    suspend fun updateCustomer(token: String, customer: CustomerAuthRequest): Response<Unit>
 }
 
 class AuthApiRepositoryImpl(
@@ -29,5 +30,9 @@ class AuthApiRepositoryImpl(
 
     override suspend fun signIn(signIn: SignInAuthRequest): Response<SignInAuthResponse> {
         return authApiService.signIn(signIn)
+    }
+
+    override suspend fun updateCustomer(token: String, customer: CustomerAuthRequest): Response<Unit> {
+        return authApiService.updateCustomer("Bearer $token" ,customer)
     }
 }
