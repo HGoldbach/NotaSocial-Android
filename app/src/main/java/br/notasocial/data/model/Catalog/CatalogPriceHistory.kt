@@ -1,9 +1,8 @@
 package br.notasocial.data.model.Catalog
 
-
 import com.google.gson.annotations.SerializedName
 
-data class CatalogProduct(
+data class CatalogPriceHistory(
     @SerializedName("content")
-    val products: List<Product> = emptyList(),
+    val priceHistory: List<PriceHistory?>?,
 )

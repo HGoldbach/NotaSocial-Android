@@ -11,6 +11,6 @@ data class Product(
     val code: String? = "",
     @SerializedName("price")
     val price: Double? = 0.0,
-    @SerializedName("storeCorrelationId")
-    val storeCorrelationId: String? = "",
+    @SerializedName("storeId")
+    val storeId: String? = "",
 )
