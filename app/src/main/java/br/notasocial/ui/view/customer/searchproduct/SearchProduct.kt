@@ -51,8 +51,8 @@ import br.notasocial.ui.components.product.SearchProductItem
 import br.notasocial.ui.navigation.NavigationDestination
 import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.ralewayFamily
-import br.notasocial.ui.viewmodel.buscarproduto.SearchProductViewModel
-import br.notasocial.ui.viewmodel.buscarproduto.CatalogUiState
+import br.notasocial.ui.viewmodel.customer.searchproduct.SearchProductViewModel
+import br.notasocial.ui.viewmodel.customer.searchproduct.CatalogUiState
 import kotlinx.coroutines.launch
 
 object SearchProductDestination : NavigationDestination {
