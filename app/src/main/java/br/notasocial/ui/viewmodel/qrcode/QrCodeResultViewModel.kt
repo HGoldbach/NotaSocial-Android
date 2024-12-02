@@ -8,7 +8,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.notasocial.data.repository.NotaSocialApiRepository
-import br.notasocial.ui.view.qrcode.QrCodeResultDestination
+import br.notasocial.data.repository.UserPreferencesRepository
+import br.notasocial.ui.view.customer.qrcode.QrCodeResultDestination
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
@@ -22,11 +23,12 @@ sealed interface ReceiptUiState {
 
 class QrCodeResultViewModel(
     savedStateHandle: SavedStateHandle,
-    private val notaSocialRepository: NotaSocialApiRepository
+    private val notaSocialRepository: NotaSocialApiRepository,
+    private val userPreferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
 
     private val receiptId: String = checkNotNull(savedStateHandle[QrCodeResultDestination.receiptIdArg])
-
+    private var token: String = ""
     private val baseUrl = "http://www.fazenda.pr.gov.br/nfce/qrcode?p="
 
     var receiptUrl by mutableStateOf("")
@@ -42,17 +44,25 @@ class QrCodeResultViewModel(
         private set
 
     init {
-        registerReceipt()
+        viewModelScope.launch {
+            userPreferencesRepository.currentUserData.collect { userData ->
+                if (userData.token.isNotEmpty()) {
+                    token = userData.token
+                    registerReceipt(token)
+                }
+            }
+        }
     }
 
-    private fun registerReceipt() {
+    private fun registerReceipt(token: String) {
         viewModelScope.launch {
             receiptUiState = ReceiptUiState.Loading
             receiptUiState = try {
-                val result = notaSocialRepository.getReceiptInformation("$baseUrl$receiptId")
+                val result = notaSocialRepository.getReceiptInformation(token = token, "$baseUrl$receiptId")
                 if (result.isSuccessful) {
                     ReceiptUiState.Success
                 } else {
+                    Log.e("QrCodeResultViewModel", "Error: $result")
                     ReceiptUiState.Error("Error: ${result.code()}")
                 }
             } catch (e: IOException) {
@@ -62,8 +72,4 @@ class QrCodeResultViewModel(
             }
         }
     }
-
-
-
-
 }
