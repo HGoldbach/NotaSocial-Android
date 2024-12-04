@@ -1,5 +1,6 @@
 package br.notasocial.ui.view.store
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,6 +31,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,6 +52,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import br.notasocial.R
 import br.notasocial.ui.AppViewModelProvider
 import br.notasocial.ui.components.store.InputField
+import br.notasocial.ui.components.store.MaskVisualTransformation
 import br.notasocial.ui.navigation.NavigationDestination
 import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.ralewayFamily
@@ -66,10 +69,31 @@ object StorePromotionEditDestination : NavigationDestination {
 @Composable
 fun StorePromotionEditScreen(
     viewModel: PromotionViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    navigateToPromotions: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
     val uiState = viewModel.uiState
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collect { event ->
+            when (event) {
+                is PromotionViewModel.UiEvent.PromotionSuccess -> {
+                    Toast.makeText(
+                        context,
+                        "Promoção salva com sucesso!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    navigateToPromotions()
+                }
+
+                is PromotionViewModel.UiEvent.ShowError -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
 
     Column(
         modifier = modifier
@@ -158,7 +182,10 @@ fun PromotionFormSection(
         InputField(
             text = "Validade",
             value = uiState.dueDate,
-            onValueChange = onDueDateChange,
+            visualTransformation = MaskVisualTransformation(validityMask.MASK),
+            onValueChange = {
+                if (it.length <= validityMask.INPUT_LENGTH) onDueDateChange(it)
+            },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             icon = R.drawable.calendar_solid,
             modifier = Modifier
@@ -179,13 +206,12 @@ fun PromotionFormSection(
                 fontFamily = ralewayFamily,
                 modifier = Modifier.padding(vertical = 12.dp)
             )
-            // Itera pelos produtos e cria um campo para cada um
             uiState.products.forEachIndexed { index, product ->
                 Row(
                     modifier = Modifier.padding(vertical = 4.dp)
                 ) {
                     InputField(
-                        text = "Nome", // Nome
+                        text = "Nome",
                         value = product.first,
                         onValueChange = { name -> onProductNameChange(index, name) },
                         modifier = Modifier
@@ -193,8 +219,9 @@ fun PromotionFormSection(
                             .padding(end = 10.dp)
                     )
                     InputField(
-                        text = "Preço", // Preço
+                        text = "Preço",
                         value = product.second,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         onValueChange = { price -> onProductPriceChange(index, price) },
                         modifier = Modifier.weight(1f)
                     )
@@ -239,6 +266,10 @@ fun PromotionFormSection(
     }
 }
 
+object validityMask {
+    const val MASK = "##/##/####"
+    const val INPUT_LENGTH = 8 // Equals to "#####-###".count { it == '#' }
+}
 
 @Composable
 fun PromotionDropdown() {
@@ -278,7 +309,9 @@ fun PromotionDropdown() {
 @Preview(showBackground = true)
 fun StorePromotionEditScreenPreview() {
     NotasocialTheme {
-        StorePromotionEditScreen()
+        StorePromotionEditScreen(
+            navigateToPromotions = {}
+        )
     }
 }
 

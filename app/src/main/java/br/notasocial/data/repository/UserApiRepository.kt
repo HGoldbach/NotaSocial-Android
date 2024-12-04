@@ -1,8 +1,9 @@
 package br.notasocial.data.repository
 
+import br.notasocial.data.model.Social.CommentRequest
+import br.notasocial.data.model.Social.CommentResponse
 import br.notasocial.data.model.Social.Ranking
 import br.notasocial.data.model.Social.Review
-import br.notasocial.data.model.Social.ShoppingListItem
 import br.notasocial.data.model.Social.ShoppingListRequest
 import br.notasocial.data.model.Social.ShoppingListResponse
 import br.notasocial.data.model.User.UserResponse
@@ -23,6 +24,8 @@ interface UserApiRepository {
     suspend fun calculateDistance(token: String, cep: String): Response<ShoppingListResponse>
     suspend fun removeProductFromShoppingList(token: String, products: ShoppingListRequest): Response<Unit>
     suspend fun getRanking(): Response<Ranking>
+    suspend fun createComment(token: String, comment: CommentRequest): Response<Unit>
+    suspend fun getComments(token: String): Response<CommentResponse>
 }
 
 class UserApiRepositoryImpl(
@@ -74,5 +77,13 @@ class UserApiRepositoryImpl(
 
     override suspend fun getRanking(): Response<Ranking> {
         return userApiService.getRanking(page = "0", size = "20", sortDirection = "DESC", sortBy = "totalReceipts")
+    }
+
+    override suspend fun createComment(token: String, comment: CommentRequest): Response<Unit> {
+        return userApiService.createComment("Bearer $token", comment)
+    }
+
+    override suspend fun getComments(token: String): Response<CommentResponse> {
+        return userApiService.getComments("Bearer $token", maxDepth = "2", maxRepliesPerLevel = "2", page = "0", size = "20", sortDirection = "DESC", sortBy = "createdAt")
     }
 }

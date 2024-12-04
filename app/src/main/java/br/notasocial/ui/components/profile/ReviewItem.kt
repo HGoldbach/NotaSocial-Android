@@ -1,6 +1,5 @@
 package br.notasocial.ui.components.profile
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -62,7 +61,7 @@ fun ReviewItem(
                         .data(review.product?.image)
                         .crossfade(true)
                         .build(),
-                    error = painterResource(R.drawable.ic_broken_image),
+                    error = painterResource(R.drawable.nota_social_typho),
                     placeholder = painterResource(R.drawable.loading_img),
                     contentDescription = "",
                     contentScale = ContentScale.Crop,

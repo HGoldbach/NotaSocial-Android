@@ -58,11 +58,11 @@ fun ProductInfo(
                     .data(product.image)
                     .crossfade(true)
                     .build(),
-                error = painterResource(R.drawable.ic_broken_image),
+                error = painterResource(R.drawable.nota_social_typho),
                 placeholder = painterResource(R.drawable.loading_img),
                 contentDescription = "",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxWidth()
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.fillMaxHeight()
             )
         }
         Column(
@@ -146,6 +146,7 @@ fun ProductInfo(
                         text = textTitleCase(branchStoreName ?: ""),
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 10.sp,
+                        maxLines = 1,
                         fontFamily = ralewayFamily,
                         color = Color.hsl(123f, 0.66f, 0.33f, 1f)
                     )

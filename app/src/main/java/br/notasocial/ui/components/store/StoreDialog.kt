@@ -39,7 +39,9 @@ import coil.request.ImageRequest
 fun StoreDialog(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
+    isButtonsEnabled: Boolean = true,
     address: AddressDb,
+    storeName: String = "",
     onRemove: (Int) -> Unit
 ) {
     Dialog(onDismissRequest = { onDismissRequest() }) {
@@ -86,8 +88,8 @@ fun StoreDialog(
                     )
                 }
                 Text(
-                    text = "Filial",
-                    fontSize = 32.sp,
+                    text = storeName.ifEmpty { "Filial" },
+                    fontSize = 24.sp,
                     color = Color.Black,
                     fontWeight = FontWeight.Bold,
                     fontFamily = ralewayFamily
@@ -145,41 +147,43 @@ fun StoreDialog(
                     )
                 }
             }
-            Row(
-                modifier = Modifier.padding(bottom = 10.dp).fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Button(
-                    onClick = {},
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.hsl(123f, .63f, .33f, 1f),
-                        contentColor = Color.White
-                    ),
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.padding(end = 7.dp)
+            if (isButtonsEnabled) {
+                Row(
+                    modifier = Modifier.padding(bottom = 10.dp).fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
                 ) {
-                    Text(
-                        text = "Editar",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = ralewayFamily
-                    )
-                }
-                Button(
-                    onClick = { onRemove(address.id) },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.hsl(0f, 1f, .5f, 1f),
-                        contentColor = Color.White
-                    ),
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.padding(start = 7.dp)
-                ) {
-                    Text(
-                        text = "Excluir",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = ralewayFamily
-                    )
+                    Button(
+                        onClick = {},
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.hsl(123f, .63f, .33f, 1f),
+                            contentColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.padding(end = 7.dp)
+                    ) {
+                        Text(
+                            text = "Editar",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = ralewayFamily
+                        )
+                    }
+                    Button(
+                        onClick = { onRemove(address.id) },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.hsl(0f, 1f, .5f, 1f),
+                            contentColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.padding(start = 7.dp)
+                    ) {
+                        Text(
+                            text = "Excluir",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = ralewayFamily
+                        )
+                    }
                 }
             }
         }

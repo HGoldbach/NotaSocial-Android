@@ -50,12 +50,12 @@ fun FavoriteItem(
                     .data(favorite.image)
                     .crossfade(true)
                     .build(),
-                error = painterResource(R.drawable.ic_broken_image),
+                error = painterResource(R.drawable.nota_social_typho),
                 placeholder = painterResource(R.drawable.loading_img),
                 contentDescription = "",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .size(150.dp)
                     .padding(20.dp)
                     .clickable { navigateToProduct(favorite.id) }
             )

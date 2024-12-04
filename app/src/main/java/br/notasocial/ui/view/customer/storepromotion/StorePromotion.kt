@@ -19,13 +19,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import br.notasocial.data.model.StoreDb.PromotionDb
+import br.notasocial.data.model.Store
 import br.notasocial.ui.AppViewModelProvider
 import br.notasocial.ui.components.store.StoreInfo
 import br.notasocial.ui.navigation.NavigationDestination
 import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.interFamily
 import br.notasocial.ui.theme.ralewayFamily
+import br.notasocial.ui.utils.formatDate
 import br.notasocial.ui.utils.formatPriceString
 import br.notasocial.ui.viewmodel.customer.storepromotion.StorePromotionViewModel
 
@@ -36,66 +37,6 @@ object StorePromotionDestination : NavigationDestination {
     const val storeNameArg = "storeName"
     val routeWithArgs = "${route}/{$promotionIdArg}/{$storeNameArg}"
 }
-
-// Provisorio
-data class ProductPromotion(
-    val id: Int,
-    val nome: String,
-    val preco: Double
-)
-
-val promotions = listOf(
-    ProductPromotion(
-        id = 1,
-        nome = "Pao Forma Seven Boys",
-        preco = 2.99
-    ),
-    ProductPromotion(
-        id = 2,
-        nome = "Mamao Formosa",
-        preco = 8.29
-    ),
-    ProductPromotion(
-        id = 3,
-        nome = "Coca Cola 2L",
-        preco = 7.99
-    ),
-    ProductPromotion(
-        id = 4,
-        nome = "Limao Tahiti",
-        preco = 3.99
-    ),
-    ProductPromotion(
-        id = 5,
-        nome = "Arroz Buriti",
-        preco = 6.99
-    ),
-    ProductPromotion(
-        id = 6,
-        nome = "Pao Forma Seven Boys",
-        preco = 2.99
-    ),
-    ProductPromotion(
-        id = 7,
-        nome = "Mamao Formosa",
-        preco = 8.29
-    ),
-    ProductPromotion(
-        id = 8,
-        nome = "Coca Cola 2L",
-        preco = 7.99
-    ),
-    ProductPromotion(
-        id = 9,
-        nome = "Limao Tahiti",
-        preco = 3.99
-    ),
-    ProductPromotion(
-        id = 10,
-        nome = "Arroz Buriti",
-        preco = 6.99
-    ),
-)
 
 @Composable
 fun StorePromotionScreen(
@@ -116,6 +57,7 @@ fun StorePromotionScreen(
         ) {
             StoreInfo(
                 title = "Promoçao ${viewModel.storeName}",
+                store = Store(),
             )
             ProductPromotionSection(
                 products = uiState.products,
@@ -148,8 +90,8 @@ fun ProductPromotionSection(
             )
         }
         Text(
-            text = "Promoção válida até ${validity}",
-            fontSize = 16.sp,
+            text = "Promoção válida até ${formatDate(validity)}",
+            fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             color = Color.Black,
             fontFamily = ralewayFamily,

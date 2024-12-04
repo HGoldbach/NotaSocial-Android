@@ -1,6 +1,7 @@
 package br.notasocial.ui.components.profile
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -12,6 +13,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -22,6 +25,8 @@ import br.notasocial.data.model.User.UserResponse
 import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.interFamily
 import br.notasocial.ui.theme.ralewayFamily
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 
 @Composable
 fun ProfileInfo(
@@ -39,11 +44,16 @@ fun ProfileInfo(
             color = Color.White,
             shape = CircleShape
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.user_solid),
+            AsyncImage(
+                model = ImageRequest.Builder(context = LocalContext.current)
+                    .data(user.photo)
+                    .crossfade(true)
+                    .build(),
+                error = painterResource(R.drawable.nota_social_typho),
+                placeholder = painterResource(R.drawable.loading_img),
                 contentDescription = "",
-                tint = Color.hsl(123f, .63f, .33f, 1f),
-                modifier = Modifier.padding(40.dp)
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.fillMaxHeight()
             )
         }
         Text(

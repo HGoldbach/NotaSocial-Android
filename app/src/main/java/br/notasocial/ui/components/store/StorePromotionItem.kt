@@ -29,6 +29,7 @@ import br.notasocial.data.model.StoreDb.AddressDb
 import br.notasocial.data.model.StoreDb.PromotionDb
 import br.notasocial.ui.theme.interFamily
 import br.notasocial.ui.theme.ralewayFamily
+import br.notasocial.ui.utils.formatDate
 
 @Composable
 fun StorePromotionItem(
@@ -71,7 +72,7 @@ fun StorePromotionItem(
                 modifier = Modifier.size(12.dp)
             )
             Text(
-                text = "Valido até ${promotion.validity} ",
+                text = "Valido até ${formatDate(promotion.validity)}",
                 fontSize = 10.sp,
                 color = Color.Black,
                 fontWeight = FontWeight.Light,

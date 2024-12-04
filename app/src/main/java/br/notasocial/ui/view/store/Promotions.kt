@@ -45,7 +45,6 @@ object StorePromotionsDestination : NavigationDestination {
     override val title = "Promocoes"
 }
 
-
 @Composable
 fun StorePromotionsScreen(
     navigateToPromotionDetails: (Int) -> Unit,
@@ -115,18 +114,6 @@ fun PromocoesTopSection(
                 )
             }
         }
-        Row(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            SearchBar(
-                placeholderText = "Buscar Promoção",
-                searchText = "",
-                onSearchChange = {},
-                searchProduct = {}
-            )
-            Spacer(modifier = Modifier.padding(10.dp))
-            FilterSearch()
-        }
     }
 }
 
@@ -143,7 +130,9 @@ fun PromocoesGrid(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Nenhuma promoção cadastrada"
+                text = "Nenhuma promoção cadastrada",
+                fontFamily = ralewayFamily,
+                color = Color.Black
             )
         }
     } else {

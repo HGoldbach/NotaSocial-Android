@@ -11,6 +11,9 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,8 +28,10 @@ import br.notasocial.ui.components.store.StoreItem
 import br.notasocial.ui.navigation.NavigationDestination
 import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.view.customer.searchproduct.SearchBar
+import br.notasocial.ui.view.customer.searchproduct.SearchProductTopSection
 import br.notasocial.ui.viewmodel.customer.searchstore.SearchStoreViewModel
 import br.notasocial.ui.viewmodel.customer.searchstore.StoreUiState
+import kotlinx.coroutines.launch
 
 object SearchStoreDestination : NavigationDestination {
     override val route = "search_store"
@@ -39,6 +44,8 @@ fun SearchStoreScreen(
     modifier: Modifier = Modifier,
     viewModel: SearchStoreViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
+    val searchText by viewModel.searchText.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
     Column(
         modifier = modifier
             .background(color = Color.hsl(0f, 0f, 0.97f, 1f))
@@ -49,9 +56,13 @@ fun SearchStoreScreen(
         ) {
             SearchBar(
                 placeholderText = stringResource(id = R.string.search_store_placeholder),
-                searchText = "",
-                onSearchChange = {},
-                searchProduct = {},
+                searchText = searchText,
+                onSearchChange = { text ->
+                    coroutineScope.launch {
+                        viewModel.onSearchTextChange(text)
+                    }
+                },
+                searchProduct = { viewModel.searchStore(searchText) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(15.dp),
@@ -113,7 +124,7 @@ fun SuccessStoresGrid(
             StoreItem(
                 store,
                 navigateToStore,
-                modifier = Modifier.padding(15.dp)
+                modifier = Modifier.padding(5.dp)
             )
         }
     }

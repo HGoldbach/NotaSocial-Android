@@ -41,10 +41,10 @@ fun StoreItem(
     ) {
         AsyncImage(
             model = ImageRequest.Builder(context = LocalContext.current)
-                .data("https://static.vecteezy.com/ti/vetor-gratis/p1/5766127-supermercado-loja-logo-vetor.jpg")
+                .data(store.image)
                 .crossfade(true)
                 .build(),
-            error = painterResource(R.drawable.ic_broken_image),
+            error = painterResource(R.drawable.nota_social_typho),
             placeholder = painterResource(R.drawable.loading_img),
             contentDescription = "",
             contentScale = ContentScale.Fit,
@@ -62,6 +62,7 @@ fun StoreItem(
                     fontFamily = ralewayFamily,
                     fontSize = 12.sp,
                     lineHeight = 1.em,
+                    color = Color.Black,
                     minLines = 2,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.padding(top = 12.dp)

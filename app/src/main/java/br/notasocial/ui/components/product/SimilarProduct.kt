@@ -37,7 +37,7 @@ fun SimilarProduct(
                 .data(product.image)
                 .crossfade(true)
                 .build(),
-            error = painterResource(R.drawable.ic_broken_image),
+            error = painterResource(R.drawable.nota_social_typho),
             placeholder = painterResource(R.drawable.loading_img),
             contentDescription = "",
             contentScale = ContentScale.Crop,

@@ -24,6 +24,12 @@ class StoreProfileViewModel(
 
     private val storeId: String = checkNotNull(savedStateHandle[StoreProfileDestination.storeIdArg])
 
+    var isUserFollowing: Boolean by mutableStateOf(false)
+        private set
+
+
+
+
     init {
         getStoreProfile()
     }

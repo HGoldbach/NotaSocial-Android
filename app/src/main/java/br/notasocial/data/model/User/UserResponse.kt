@@ -13,6 +13,6 @@ data class UserResponse(
     val lastName: String = "",
     @SerializedName("email")
     val email: String = "",
-    @SerializedName("photo")
+    @SerializedName("urlPhoto")
     val photo: String = "",
 )

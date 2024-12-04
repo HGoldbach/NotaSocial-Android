@@ -1,5 +1,6 @@
 package br.notasocial.ui.view.store
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +20,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,6 +40,7 @@ import br.notasocial.ui.components.store.MaskVisualTransformation
 import br.notasocial.ui.navigation.NavigationDestination
 import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.ralewayFamily
+import br.notasocial.ui.viewmodel.customer.userprofile.UserProfileViewModel
 import br.notasocial.ui.viewmodel.store.AddressUiState
 import br.notasocial.ui.viewmodel.store.AddressViewModel
 import coil.compose.AsyncImage
@@ -51,10 +54,33 @@ object StoreAddressEditDestination : NavigationDestination {
 @Composable
 fun StoreAddressEditScreen(
     viewModel: AddressViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    navigateToAddresses: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val uiState = viewModel.uiState
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collect { event ->
+            when (event) {
+                is AddressViewModel.UiEvent.AddressSuccess -> {
+                    Toast.makeText(
+                        context,
+                        "Endereço cadastrada com sucesso!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                        navigateToAddresses()
+                }
+
+                is AddressViewModel.UiEvent.ShowError -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
+
+                else -> {}
+            }
+        }
+    }
 
     Column(
         modifier = modifier
@@ -260,7 +286,9 @@ object cepMask {
 @Preview(showBackground = true)
 fun StoreAddressEditScreenPreview() {
     NotasocialTheme {
-        StoreAddressEditScreen()
+        StoreAddressEditScreen(
+            navigateToAddresses = {}
+        )
     }
 }
 

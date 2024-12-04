@@ -1,6 +1,5 @@
 package br.notasocial.ui.view.customer.storeprofile
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,10 +14,8 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -97,7 +94,8 @@ fun StoreProfileScreen(
                 )
 
                 StoreMenuItem.ENDERECOS -> AddressSection(
-                    addresses = viewModel.addresses
+                    addresses = viewModel.addresses,
+                    storeName = viewModel.store.name!!
                 )
             }
         }
@@ -113,30 +111,8 @@ fun StoreProfileTopSection(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.End
-        ) {
-            TextButton(
-                onClick = {},
-                colors = ButtonDefaults.textButtonColors(
-                    containerColor = Color.White,
-                ),
-                border = BorderStroke(1.dp, color = Color.hsl(123f, .63f, .33f, 1f)),
-                modifier = Modifier
-                    .width(82.dp)
-                    .height(35.dp)
-            ) {
-                Text(
-                    text = stringResource(id = R.string.follow_profile).uppercase(),
-                    fontFamily = ralewayFamily,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.hsl(123f, .63f, .33f, 1f),
-                )
-            }
-        }
         StoreInfo(
+            store = store,
             title = "${store.name}".uppercase(),
         )
     }
@@ -176,6 +152,7 @@ fun PromotionsSection(
                 Text(
                     text = "Nenhuma promoção cadastrada",
                     fontSize = 12.sp,
+                    color = Color.Black,
                     fontWeight = FontWeight.Medium,
                     fontFamily = ralewayFamily
                 )
@@ -200,7 +177,8 @@ fun PromotionsSection(
 @Composable
 fun AddressSection(
     modifier: Modifier = Modifier,
-    addresses: List<AddressDb>
+    addresses: List<AddressDb>,
+    storeName: String
 ) {
     Column(
         modifier = modifier
@@ -229,13 +207,15 @@ fun AddressSection(
                 Text(
                     text = "Nenhum endereço cadastrado",
                     fontSize = 12.sp,
+                    color = Color.Black,
                     fontWeight = FontWeight.Medium,
                     fontFamily = ralewayFamily
                 )
             }
         } else {
             AddressGrid(
-                addresses = addresses
+                addresses = addresses,
+                storeName = storeName
             )
         }
     }
@@ -244,7 +224,8 @@ fun AddressSection(
 @Composable
 fun AddressGrid(
     addresses: List<AddressDb>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    storeName: String
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -253,7 +234,8 @@ fun AddressGrid(
         items(items = addresses, key = { it.id }) { address ->
             StoreAddressItem(
                 address = address,
-                modifier = Modifier.padding(10.dp)
+                modifier = Modifier.padding(10.dp),
+                storeName = storeName
             )
         }
     }
@@ -295,6 +277,6 @@ fun PromotionsSectionPreview() {
 @Composable
 fun AddressSectionPreview() {
     NotasocialTheme {
-        AddressSection(addresses = emptyList())
+        AddressSection(addresses = emptyList(), storeName = "")
     }
 }

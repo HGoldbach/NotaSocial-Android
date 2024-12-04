@@ -1,5 +1,6 @@
 package br.notasocial.ui.components.chart
 
+import android.annotation.SuppressLint
 import android.graphics.Typeface
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,21 +32,8 @@ import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.FloatEntry
 import com.patrykandpatrick.vico.core.extension.ceil
 
-data class Preco(
-    val id: Int,
-    val price: Double,
-    val date: String
-)
 
-val precos = listOf(
-    Preco(1, 5.22, "03/05"),
-    Preco(2, 11.20, "11/05"),
-    Preco(3, 8.50, "20/05"),
-    Preco(4, 9.30, "22/05"),
-    Preco(5, 7.75, "25/05"),
-    Preco(6, 9.40, "29/05")
-)
-
+@SuppressLint("DefaultLocale")
 @Composable
 fun LineChart(
     priceHistory: List<PriceHistory>
@@ -76,25 +64,9 @@ fun LineChart(
             )
         )
 
-
-        /*
-        for (i in 0 until priceHistory.size) {
-            dataPoints.add(FloatEntry(x = i.toFloat(), y = priceHistory[i].price!!.toFloat()))
-        }
-
-         */
-
-
         priceHistory.forEachIndexed { index, price ->
             dataPoints.add(FloatEntry(x = index.toFloat(), y = price.price!!.toFloat()))
         }
-        /*
-
-        precos.forEachIndexed { index, preco ->
-            dataPoints.add(FloatEntry(x = index.toFloat(), y = preco.price.toFloat()))
-        }
-
-         */
 
         datasetForModel.add(dataPoints)
         modelProducer.setEntries(datasetForModel)
@@ -134,7 +106,6 @@ fun LineChart(
                         tickLength = 0.dp,
                         valueFormatter = { value, _ ->
                             priceHistory.getOrNull(value.toInt())?.priceChangeDate ?: ""
-                            //precos.getOrNull(value.toInt())?.date ?: ""
                         },
                         guideline = null
                     ),

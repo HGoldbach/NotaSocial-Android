@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -44,6 +45,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -62,6 +64,7 @@ import br.notasocial.R
 import br.notasocial.ui.navigation.NotaSocialNavHost
 import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.ralewayFamily
+import br.notasocial.ui.view.customer.contact.ContactDestination
 import br.notasocial.ui.view.customer.home.HomeDestination
 import br.notasocial.ui.view.customer.qrcode.QrCodeDestination
 import br.notasocial.ui.view.customer.ranking.RankingDestination
@@ -77,8 +80,8 @@ import br.notasocial.ui.view.store.StoreHomeDestination
 import br.notasocial.ui.view.store.StorePromotionsDestination
 import br.notasocial.ui.viewmodel.MainUiState
 import br.notasocial.ui.viewmodel.MainViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-
 
 @Composable
 fun NotaSocialApp(
@@ -93,6 +96,13 @@ fun NotaSocialApp(
 
     val currentDestination = navController.currentBackStackEntryAsState().value?.destination?.route
 
+    var showNavHost by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        delay(1000)
+        showNavHost = true
+    }
+
     LaunchedEffect(currentDestination) {
         if (drawerState.isOpen) {
             scope.launch {
@@ -101,10 +111,9 @@ fun NotaSocialApp(
         }
     }
 
-    // Verifica se o Drawer deve ser mostrado
     val showDrawer = currentDestination !in listOf(
         SignInDestination.route,
-        SignUpScreenDestination.route // Substitua pelos nomes das suas rotas
+        SignUpScreenDestination.route
     )
 
     if (showDrawer) {
@@ -124,47 +133,74 @@ fun NotaSocialApp(
                         navigateToRegistrar = { navController.navigate(SignUpScreenDestination.route) },
                         navigateToPromotions = { navController.navigate(StorePromotionsDestination.route) },
                         navigateToAddresses = { navController.navigate(StoreAddressesDestination.route) },
+                        navigateToContact = { navController.navigate(ContactDestination.route) },
                         logout = { viewModel.logout() }
                     )
                 }
             },
             content = {
-                Scaffold(
-                    topBar = {
-                        NotaSocialTopAppBar(
-                            isMenuActive = drawerState.isOpen,
-                            onMenuToggle = {
-                                scope.launch {
-                                    if (drawerState.isClosed) drawerState.open() else drawerState.close()
+                if (showNavHost) {
+                    Scaffold(
+                        topBar = {
+                            NotaSocialTopAppBar(
+                                isMenuActive = drawerState.isOpen,
+                                onMenuToggle = {
+                                    scope.launch {
+                                        if (drawerState.isClosed) drawerState.open() else drawerState.close()
+                                    }
+                                },
+                                navigateToHome = {
+                                    if (uiState.role == "STORE") {
+                                        navController.navigate(StoreHomeDestination.route)
+                                    } else {
+                                        navController.navigate(HomeDestination.route)
+                                    }
                                 }
-                            },
-                            navigateToHome = {
-                                if(uiState.role == "STORE") {
-                                    navController.navigate(StoreHomeDestination.route)
-                                } else {
-                                    navController.navigate(HomeDestination.route)
-                                }
-                            }
-                        )
-                    },
-                    bottomBar = {
-                        NotaSocialBottomAppBar(
-                            navigateToBuscarProduto = { navController.navigate(SearchProductDestination.route) },
-                            navigateToPerfilProprio = { navController.navigate(UserProfileHomeDestination.route) },
-                            navigateToRanking = { navController.navigate(RankingDestination.route) },
-                            navigateToHome = { navController.navigate(HomeDestination.route) },
-                            navigateToAddresses = { navController.navigate(StoreAddressesDestination.route) },
-                            navigateToPromotions = { navController.navigate(StorePromotionsDestination.route) },
+                            )
+                        },
+                        bottomBar = {
+                            NotaSocialBottomAppBar(
+                                navigateToBuscarProduto = {
+                                    navController.navigate(
+                                        SearchProductDestination.route
+                                    )
+                                },
+                                navigateToPerfilProprio = {
+                                    navController.navigate(
+                                        UserProfileHomeDestination.route
+                                    )
+                                },
+                                navigateToRanking = { navController.navigate(RankingDestination.route) },
+                                navigateToHome = { navController.navigate(HomeDestination.route) },
+                                navigateToAddresses = { navController.navigate(StoreAddressesDestination.route) },
+                                navigateToPromotions = {
+                                    navController.navigate(
+                                        StorePromotionsDestination.route
+                                    )
+                                },
+                            )
+                        }
+                    ) { innerPadding ->
+                        NotaSocialNavHost(
+                            checkCameraPermission = checkCameraPermission,
+                            textResult = textResult,
+                            navController = navController,
+                            role = uiState.role,
+                            modifier = Modifier.padding(innerPadding)
                         )
                     }
-                ) { innerPadding ->
-                    NotaSocialNavHost(
-                        checkCameraPermission = checkCameraPermission,
-                        textResult = textResult,
-                        navController = navController,
-                        role = uiState.role,
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(color = Color.White),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.nota_social_rounded),
+                            contentDescription = ""
+                        )
+                    }
                 }
             }
         )
@@ -198,21 +234,9 @@ fun MainContent(
 
 @Composable
 fun NotaSocialTopAppBar(
-    navigateToBuscarProduto: () -> Unit = {},
-    navigateToEstabelecimentos: () -> Unit = {},
-    navigateToRanking: () -> Unit = {},
-    navigateToFavoritos: () -> Unit = {},
-    navigateToShoplist: () -> Unit = {},
-    navigateToCadastrarNota: () -> Unit = {},
-    navigateToLogin: () -> Unit = {},
-    navigateToRegistrar: () -> Unit = {},
-    navigateToAddresses: () -> Unit = {},
-    navigateToPromotions: () -> Unit = {},
     isMenuActive: Boolean = false,
     onMenuToggle: () -> Unit = {},
     navigateToHome: () -> Unit = {},
-    modifier: Modifier = Modifier,
-    viewModel: MainViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     Navbar(
         isMenuActive = isMenuActive,
@@ -234,6 +258,7 @@ fun MenuSection(
     navigateToRegistrar: () -> Unit,
     navigateToPromotions: () -> Unit,
     navigateToAddresses: () -> Unit,
+    navigateToContact: () -> Unit,
     logout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -279,7 +304,13 @@ fun MenuSection(
             MenuItem(
                 text = "Sair",
                 icon = R.drawable.signout_solid,
-                modifier = Modifier.clickable { logout() } // Provisorio para fazer logout
+                modifier = Modifier.clickable { logout() }
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            MenuItem(
+                text = "Contato",
+                icon = R.drawable.circle_solid,
+                modifier = Modifier.clickable { navigateToContact() }.padding(bottom = 20.dp)
             )
         }
 
@@ -306,6 +337,12 @@ fun MenuSection(
                 icon = R.drawable.signup_solid,
                 modifier = Modifier.clickable { navigateToRegistrar() }
             )
+            Spacer(modifier = Modifier.weight(1f))
+            MenuItem(
+                text = "Contato",
+                icon = R.drawable.circle_solid,
+                modifier = Modifier.clickable { navigateToContact() }.padding(bottom = 20.dp)
+            )
         }
 
         if (role == "STORE") {
@@ -327,6 +364,12 @@ fun MenuSection(
                 modifier = Modifier.clickable {
                     logout()
                 }
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            MenuItem(
+                text = "Contato",
+                icon = R.drawable.circle_solid,
+                modifier = Modifier.clickable { navigateToContact() }.padding(bottom = 20.dp)
             )
         }
 
@@ -378,7 +421,8 @@ fun Navbar(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(50.dp),
+            .height(50.dp)
+            .background(color = Color.White),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -462,7 +506,7 @@ fun NotaSocialBottomAppBar(
         modifier = modifier.height(60.dp)
     ) {
         NavigationBarItem(
-            selected = true,
+            selected = false,
             onClick = { navigateToHome() },
             icon = {
                 Icon(
@@ -525,7 +569,6 @@ fun NotaSocialBottomAppBar(
 fun ModalNavigationDrawerSample() {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    // icons to mimic drawer destinations
     val items =
         listOf(
             Icons.Default.AccountCircle,

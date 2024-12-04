@@ -9,6 +9,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import br.notasocial.ui.view.customer.contact.ContactDestination
+import br.notasocial.ui.view.customer.contact.ContactScreen
 import br.notasocial.ui.view.customer.searchproduct.SearchProductDestination
 import br.notasocial.ui.view.customer.searchproduct.SearchProductScreen
 import br.notasocial.ui.view.customer.storeprofile.StoreProfileDestination
@@ -45,6 +47,8 @@ import br.notasocial.ui.view.customer.qrcode.QrCodeResultScreen
 import br.notasocial.ui.view.customer.qrcode.QrCodeScreen
 import br.notasocial.ui.view.customer.ranking.RankingDestination
 import br.notasocial.ui.view.customer.ranking.RankingScreen
+import br.notasocial.ui.view.customer.searchcategory.SearchCategoryDestination
+import br.notasocial.ui.view.customer.searchcategory.SearchCategoryScreen
 import br.notasocial.ui.view.customer.signup.SignUpScreen
 import br.notasocial.ui.view.customer.signup.SignUpScreenDestination
 import br.notasocial.ui.view.customer.searchstore.SearchStoreDestination
@@ -70,9 +74,10 @@ fun NotaSocialNavHost(
     role: String,
     modifier: Modifier = Modifier,
 ) {
+    val userRole = role == "STORE"
     NavHost(
         navController = navController,
-        startDestination = if (role == "STORE") {
+        startDestination = if (userRole) {
             StoreHomeDestination.route
         } else {
             HomeDestination.route
@@ -86,9 +91,18 @@ fun NotaSocialNavHost(
            ****************************************************************************************************************
         */
         // Home
+
+        fun extractCode(url: String): String {
+            return url.substringAfterLast("/")
+        }
+
         composable(route = HomeDestination.route) {
             HomeScreen(
                 navigateToProduct = { navController.navigate("${ProductDestination.route}/$it") },
+                navigateToSearchProduct = { navController.navigate(SearchProductDestination.route) },
+                navigateToSearchCategory = { id, name, image ->
+                    navController.navigate("${SearchCategoryDestination.route}/$id/$name/${extractCode(image)}")
+                }
             )
         }
 
@@ -134,12 +148,35 @@ fun NotaSocialNavHost(
             StorePromotionScreen()
         }
 
+        composable(
+            route = SearchCategoryDestination.routeWithArgs,
+            arguments = listOf(
+                navArgument(SearchCategoryDestination.categoryIdArg) {
+                  type = NavType.IntType
+                },
+                navArgument(SearchCategoryDestination.categoryNameArg) {
+                    type = NavType.StringType
+                },
+                navArgument(SearchCategoryDestination.categoryImageArg) {
+                    type = NavType.StringType
+                }
+            )) {
+            SearchCategoryScreen(
+                navigateToProduct = { navController.navigate("${ProductDestination.route}/$it") }
+            )
+        }
+
         // Lista Produtos
         composable(route = ShopListDestination.route) {
             ShopListScreen(
                 navigateToHome = { navController.navigate(HomeDestination.route) }
             )
         }
+
+        composable(route = ContactDestination.route) {
+            ContactScreen()
+        }
+
 
         // Perfil
         composable(
@@ -156,7 +193,9 @@ fun NotaSocialNavHost(
 
         // Perfil Proprio
         composable(route = AccountDestination.route) {
-            AccountScreen()
+            AccountScreen(
+                navigateToUserProfile = { navController.navigate(UserProfileHomeDestination.route) }
+            )
         }
 
         composable(route = FavoritesDestination.route) {
@@ -290,11 +329,15 @@ fun NotaSocialNavHost(
         }
 
         composable(route = StorePromotionEditDestination.route) {
-            StorePromotionEditScreen()
+            StorePromotionEditScreen(
+                navigateToPromotions = { navController.navigate(StorePromotionsDestination.route) }
+            )
         }
 
         composable(route = StoreAddressEditDestination.route) {
-            StoreAddressEditScreen()
+            StoreAddressEditScreen(
+                navigateToAddresses = { navController.navigate(StoreAddressesDestination.route) }
+            )
         }
     }
 }

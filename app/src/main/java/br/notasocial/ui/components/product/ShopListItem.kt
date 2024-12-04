@@ -28,6 +28,7 @@ import br.notasocial.data.model.Catalog.Product
 import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.interFamily
 import br.notasocial.ui.theme.ralewayFamily
+import br.notasocial.ui.utils.textTitleCase
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import java.util.Locale
@@ -57,11 +58,6 @@ fun ShopListItem(
             contentScale = ContentScale.Crop,
             modifier = Modifier.size(75.dp).padding(10.dp)
         )
-//        Image(
-//            painter = painterResource(id = R.drawable.loading_img),
-//            contentDescription = "",
-//            modifier = Modifier.size(75.dp)
-//        )
         Column(
             modifier = Modifier
         ) {
@@ -73,7 +69,7 @@ fun ShopListItem(
                 fontFamily = ralewayFamily
             )
             Text(
-                text = "${product.name}",
+                text = textTitleCase(product.name!!),
                 color = Color.Black,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold,
@@ -94,7 +90,7 @@ fun ShopListItem(
             Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text = formattedPrice,
-                fontSize = 14.sp,
+                fontSize = 12.sp,
                 color = Color.Black,
                 fontWeight = FontWeight.Bold,
                 fontFamily = interFamily,
@@ -103,23 +99,23 @@ fun ShopListItem(
     }
 }
 
-@Composable
-@Preview(showBackground = true)
-fun ShopListItemPreview() {
-    NotasocialTheme {
-        val mockProduct = Product(
-            id = "1",
-            name = "Pao Forma Seven Boys",
-            category = Category(1, "Padaria", ""),
-            image = "",
-            price = 6.69,
-            code = "123456",
-            storeId = "",
-            unit = ""
-        )
-        ShopListItem(
-            product = mockProduct,
-            onRemoveClick = {}
-        )
-    }
-}
+//@Composable
+//@Preview(showBackground = true)
+//fun ShopListItemPreview() {
+//    NotasocialTheme {
+//        val mockProduct = Product(
+//            id = "1",
+//            name = "Pao Forma Seven Boys",
+//            category = Category(1, "Padaria", ""),
+//            image = "",
+//            price = 6.69,
+//            code = "123456",
+//            storeId = "",
+//            unit = ""
+//        )
+//        ShopListItem(
+//            product = mockProduct,
+//            onRemoveClick = {}
+//        )
+//    }
+//}

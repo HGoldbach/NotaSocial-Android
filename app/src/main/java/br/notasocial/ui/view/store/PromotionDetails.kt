@@ -1,5 +1,6 @@
 package br.notasocial.ui.view.store
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,7 +41,9 @@ import br.notasocial.ui.navigation.NavigationDestination
 import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.interFamily
 import br.notasocial.ui.theme.ralewayFamily
+import br.notasocial.ui.utils.formatDate
 import br.notasocial.ui.viewmodel.store.PromotionDetailsViewModel
+import br.notasocial.ui.viewmodel.store.PromotionViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import java.util.Locale
@@ -71,6 +75,27 @@ fun PromotionDetailsScreen(
     viewModel: PromotionDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val uiState = viewModel.uiState
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collect { event ->
+            when (event) {
+                is PromotionDetailsViewModel.UiEvent.RemoveSuccess -> {
+                    Toast.makeText(
+                        context,
+                        "Promoção excluída com sucesso!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                is PromotionDetailsViewModel.UiEvent.ShowError -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -210,8 +235,8 @@ fun PromocaoInfoGrid(
             }
         }
         Text(
-            text = "Promoção válida até $validity",
-            fontSize = 16.sp,
+            text = "Promoção válida até ${formatDate(validity)}",
+            fontSize = 12.sp,
             color = Color.Black,
             fontWeight = FontWeight.Bold,
             fontFamily = ralewayFamily,

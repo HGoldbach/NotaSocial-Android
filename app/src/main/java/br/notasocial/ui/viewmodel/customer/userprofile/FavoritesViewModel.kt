@@ -9,6 +9,8 @@ import androidx.lifecycle.viewModelScope
 import br.notasocial.data.model.Social.Favorite
 import br.notasocial.data.repository.ProductApiRepository
 import br.notasocial.data.repository.UserPreferencesRepository
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
@@ -31,6 +33,14 @@ class FavoritesViewModel(
     private var token: String = ""
     private var keycloakId: String = ""
 
+    private val _uiEvent = MutableSharedFlow<UiEvent>()
+    val uiEvent = _uiEvent.asSharedFlow()
+
+    sealed class UiEvent {
+        object RemoveFavoriteSuccess: UiEvent()
+        data class ShowError(val message: String): UiEvent()
+    }
+
     init {
         viewModelScope.launch {
             userPreferencesRepository.currentUserData.collect { userData ->
@@ -48,14 +58,15 @@ class FavoritesViewModel(
             try {
                 val response = productApiRepository.removeFavorite(token, productId)
                 if (response.isSuccessful) {
-                    Log.d(TAG, "Favorito removido com sucesso")
+                    _uiEvent.emit(UiEvent.RemoveFavoriteSuccess)
+                    getFavorites(token, keycloakId)
                 } else {
-                    Log.e(TAG, "Erro ao remover favorito: ${response.code()}")
+                    _uiEvent.emit(UiEvent.ShowError("Erro ao remover favorito"))
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Erro ao remover favorito", e)
+               _uiEvent.emit(UiEvent.ShowError("Erro ao remover favorito"))
             }
-            getFavorites(token, keycloakId)
+
         }
     }
 

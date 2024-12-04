@@ -7,7 +7,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.notasocial.data.model.Social.Ranking
-import br.notasocial.data.model.Social.UserRanking
 import br.notasocial.data.repository.UserApiRepository
 import kotlinx.coroutines.launch
 

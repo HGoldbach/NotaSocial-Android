@@ -10,7 +10,7 @@ import retrofit2.http.Query
 
 interface StoreApiService {
 
-    @GET("user/account/store")
+    @GET("register/account/store")
     suspend fun getStores(
         @Query("page") page: String,
         @Query("size") size: String,
@@ -18,13 +18,22 @@ interface StoreApiService {
         @Query("sortBy") sortBy: String
     ): Response<StoreResponse>
 
-    @GET("user/store/branch/{storeId}")
+    @GET("register/store/branch/{storeId}")
     suspend fun getBranchStore(
         @Path("storeId") storeId: String
     ) : Response<StoreBranch>
 
-    @GET("user/account/store/{storeId}")
+    @GET("register/account/store/{storeId}")
     suspend fun getStoreById(
         @Path("storeId") storeId: String
     ) : Response<Store>
+
+    @GET("register/account/store/search")
+    suspend fun searchStore(
+        @Query("page") page: String,
+        @Query("size") size: String,
+        @Query("sortDirection") sortDirection: String,
+        @Query("sortBy") sortBy: String,
+        @Query("firstname") firstname: String
+    ) : Response<StoreResponse>
 }

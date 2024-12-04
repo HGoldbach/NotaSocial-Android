@@ -1,8 +1,9 @@
 package br.notasocial.data.service
 
+import br.notasocial.data.model.Social.CommentRequest
+import br.notasocial.data.model.Social.CommentResponse
 import br.notasocial.data.model.Social.Ranking
 import br.notasocial.data.model.Social.Review
-import br.notasocial.data.model.Social.ShoppingListItem
 import br.notasocial.data.model.Social.ShoppingListRequest
 import br.notasocial.data.model.Social.ShoppingListResponse
 import br.notasocial.data.model.User.UserResponse
@@ -112,4 +113,21 @@ interface UserApiService {
         @Query("sortDirection") sortDirection: String,
         @Query("sortBy") sortBy: String,
     ) : Response<Ranking>
+
+    @POST("social/comment")
+    suspend fun createComment(
+        @Header("Authorization") token: String,
+        @Body comment: CommentRequest
+    ) : Response<Unit>
+
+    @GET("social/comment/{productId}")
+    suspend fun getComments(
+        @Header("Authorization") token: String,
+        @Query("maxDepth") maxDepth: String,
+        @Query("maxRepliesPerLevel") maxRepliesPerLevel: String,
+        @Query("page") page: String,
+        @Query("size") size: String,
+        @Query("sortDirection") sortDirection: String,
+        @Query("sortBy") sortBy: String,
+    ) : Response<CommentResponse>
 }

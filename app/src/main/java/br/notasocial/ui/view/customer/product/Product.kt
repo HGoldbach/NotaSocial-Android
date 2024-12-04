@@ -1,13 +1,16 @@
 package br.notasocial.ui.view.customer.product
 
+import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -16,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -28,18 +32,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import br.notasocial.R
 import br.notasocial.data.model.Catalog.PriceHistory
 import br.notasocial.data.model.Catalog.Product
 import br.notasocial.data.model.ProductDto
+import br.notasocial.data.model.Social.CommentResponseItem
 import br.notasocial.data.model.Social.Review
 import br.notasocial.ui.AppViewModelProvider
 import br.notasocial.ui.components.chart.LineChart
+import br.notasocial.ui.components.product.ProductComment
 import br.notasocial.ui.components.product.ProductInfo
 import br.notasocial.ui.components.product.ProductReview
 import br.notasocial.ui.components.product.ProductReviewDialog
@@ -57,6 +65,7 @@ object ProductDestination : NavigationDestination {
     val routeWithArgs = "$route/{$produtoIdArg}"
 }
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun ProductScreen(
     modifier: Modifier = Modifier,
@@ -72,8 +81,11 @@ fun ProductScreen(
         viewModel.uiEvent.collect { event ->
             when (event) {
                 is ProductViewModel.UiEvent.FavoriteSuccess -> {
-                    Toast.makeText(context, "Produto favoritado com sucesso!", Toast.LENGTH_SHORT)
-                        .show()
+                    Toast.makeText(
+                        context,
+                        "Produto favoritado com sucesso!",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
 
                 is ProductViewModel.UiEvent.AddToListSuccess -> {
@@ -81,8 +93,31 @@ fun ProductScreen(
                         context,
                         "Produto adicionado à lista com sucesso!",
                         Toast.LENGTH_SHORT
-                    )
-                        .show()
+                    ).show()
+                }
+
+                is ProductViewModel.UiEvent.ReviewSuccess -> {
+                    Toast.makeText(
+                        context,
+                        "Avaliação enviada! Aguarde a aprovação do administrador.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
+                is ProductViewModel.UiEvent.LikeSuccess -> {
+                    Toast.makeText(
+                        context,
+                        "Produto curtido com sucesso!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                is ProductViewModel.UiEvent.CommentSuccess -> {
+                    Toast.makeText(
+                        context,
+                        "Comentário enviado com sucesso!",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
 
                 is ProductViewModel.UiEvent.ShowError -> {
@@ -120,11 +155,34 @@ fun ProductScreen(
                     similarProducts = viewModel.relatedProducts,
                     navigateToProfile = navigateToProfile,
                     navigateToProduct = navigateToProduct,
+                    likeReview = viewModel::likeReview,
+                    commentValue = viewModel.comment,
+                    onCommentChange = viewModel::onCommentChange,
+                    onSubmitComment = viewModel::submitComment,
+                    productComments = viewModel.comments.comments,
                     branchStoreName = viewModel.storeBranch.branch?.name,
                 )
 
-                is ProductUiState.Error -> Text(text = uiState.message)
-                is ProductUiState.Loading -> Text(text = "LOADING")
+                is ProductUiState.Error -> Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = "Erro ao carregar produto")
+                }
+
+                is ProductUiState.Loading -> Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.loading_img),
+                        contentDescription = "",
+                        modifier = Modifier.size(100.dp)
+                    )
+                }
+
             }
         }
     }
@@ -147,7 +205,12 @@ fun ProductSuccess(
     userRole: String,
     similarProducts: List<Product>,
     navigateToProduct: (String) -> Unit,
-    branchStoreName: String?
+    branchStoreName: String?,
+    commentValue: String,
+    onCommentChange: (String) -> Unit,
+    onSubmitComment: (String) -> Unit,
+    likeReview: () -> Unit,
+    productComments: List<CommentResponseItem>,
 ) {
     ProductInfo(
         reviewsTotal = reviews.size,
@@ -184,10 +247,12 @@ fun ProductSuccess(
             .fillMaxWidth(),
         color = Color.White
     )
-    PriceHistory(
-        priceHistory = priceHistory,
-        modifier = Modifier.padding(vertical = 20.dp)
-    )
+    if (priceHistory.size > 1) {
+        PriceHistory(
+            priceHistory = priceHistory,
+            modifier = Modifier.padding(vertical = 20.dp)
+        )
+    }
     Divider(
         modifier = Modifier
             .height(3.dp)
@@ -196,9 +261,116 @@ fun ProductSuccess(
     )
     ProductReviews(
         reviews = reviews,
+        commentValue = commentValue,
+        onCommentChange = onCommentChange,
+        onSubmitComment = onSubmitComment,
+        likeReview = likeReview,
         modifier = Modifier.padding(vertical = 20.dp),
         navigateToProfile = navigateToProfile
     )
+//    ProductComments(
+//        comments = productComments,
+//    )
+}
+
+//@Composable
+//fun ProductComments(
+//    modifier: Modifier = Modifier,
+//    comments: List<CommentResponseItem>
+//) {
+//    Column(
+//        modifier = modifier
+//    ) {
+//        Text(
+//            text = "Dúvidas",
+//            fontWeight = FontWeight.SemiBold,
+//            fontSize = 16.sp,
+//            color = Color.Black,
+//            fontFamily = ralewayFamily
+//        )
+//        if (comments.isEmpty()) {
+//            Column(
+//                modifier = Modifier.fillMaxWidth(),
+//                horizontalAlignment = Alignment.CenterHorizontally
+//            ) {
+//                Text(
+//                    text = "Nenhuma avaliação realizada",
+//                    fontWeight = FontWeight.Medium,
+//                    fontFamily = ralewayFamily,
+//                    color = Color.Black,
+//                    fontSize = 13.sp,
+//                    modifier = Modifier.padding(top = 9.dp)
+//                )
+//            }
+//        } else {
+//            comments.forEach { comment ->
+//                ProductComment(
+//                    comment = comment,
+//                    modifier = Modifier.padding(vertical = 19.dp)
+//                )
+//                Divider(
+//                    thickness = 4.dp,
+//                    color = Color.White,
+//                    modifier = Modifier.width(99.dp)
+//                )
+//            }
+//        }
+//    }
+//}
+
+@Composable
+fun ProductReviews(
+    reviews: List<Review>,
+    modifier: Modifier = Modifier,
+    navigateToProfile: (String) -> Unit,
+    likeReview: () -> Unit,
+    commentValue: String,
+    onCommentChange: (String) -> Unit,
+    onSubmitComment: (String) -> Unit
+) {
+    Column(
+        modifier = modifier
+    ) {
+        Text(
+            text = "Avaliações",
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 15.sp,
+            color = Color.Black,
+            fontFamily = ralewayFamily
+        )
+        if (reviews.isEmpty()) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Nenhuma avaliação realizada",
+                    fontWeight = FontWeight.Medium,
+                    fontFamily = ralewayFamily,
+                    color = Color.Black,
+                    fontSize = 13.sp,
+                    modifier = Modifier.padding(top = 9.dp)
+                )
+            }
+        } else {
+            reviews.forEach { review ->
+                ProductReview(
+                    review = review,
+                    commentValue = commentValue,
+                    onCommentChange = onCommentChange,
+                    likeReview = likeReview,
+                    onSubmitComment = onSubmitComment,
+                    modifier = Modifier.padding(vertical = 19.dp),
+                    navigateToProfile = navigateToProfile
+                )
+                Divider(
+                    thickness = 4.dp,
+                    color = Color.White,
+                    modifier = Modifier.width(99.dp)
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -340,52 +512,6 @@ fun PriceHistory(
         LineChart(
             priceHistory = priceHistory
         )
-    }
-}
-
-@Composable
-fun ProductReviews(
-    reviews: List<Review>,
-    modifier: Modifier = Modifier,
-    navigateToProfile: (String) -> Unit
-) {
-    Column(
-        modifier = modifier
-    ) {
-        Text(
-            text = "Avaliações",
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 16.sp,
-            color = Color.Black,
-            fontFamily = ralewayFamily
-        )
-        if (reviews.isEmpty()) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Nenhuma avaliação realizada",
-                    fontWeight = FontWeight.Medium,
-                    fontFamily = ralewayFamily,
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(top = 10.dp)
-                )
-            }
-        } else {
-            reviews.forEach { review ->
-                ProductReview(
-                    review = review,
-                    modifier = Modifier.padding(vertical = 20.dp),
-                    navigateToProfile = navigateToProfile
-                )
-                Divider(
-                    thickness = 5.dp,
-                    color = Color.White,
-                    modifier = Modifier.width(100.dp)
-                )
-            }
-        }
     }
 }
 

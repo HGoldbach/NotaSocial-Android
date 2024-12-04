@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -24,6 +25,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -44,6 +48,8 @@ import br.notasocial.ui.navigation.NavigationDestination
 import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.ralewayFamily
 import br.notasocial.ui.viewmodel.customer.userprofile.UserProfileViewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 
 object UserProfileHomeDestination : NavigationDestination {
     override val route = "userprofile_home"
@@ -105,11 +111,16 @@ fun HomeTopSection(
                 .background(Color.White, shape = CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Image(
-                imageVector = ImageVector.vectorResource(id = R.drawable.user_solid),
-                contentDescription = null,
-                modifier = Modifier.size(64.dp),
-                colorFilter = ColorFilter.tint(Color.hsl(123f, 0.66f, 0.33f, 1f))
+            AsyncImage(
+                model = ImageRequest.Builder(context = LocalContext.current)
+                    .data(user.photo)
+                    .crossfade(true)
+                    .build(),
+                error = painterResource(R.drawable.nota_social_typho),
+                placeholder = painterResource(R.drawable.loading_img),
+                contentDescription = "",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.fillMaxHeight()
             )
             IconButton(
                 onClick = {},

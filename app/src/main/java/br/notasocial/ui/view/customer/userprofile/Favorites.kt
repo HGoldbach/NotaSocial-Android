@@ -1,5 +1,6 @@
 package br.notasocial.ui.view.customer.userprofile
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -15,9 +16,11 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -33,6 +36,7 @@ import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.ralewayFamily
 import br.notasocial.ui.view.customer.searchproduct.FilterSearch
 import br.notasocial.ui.view.customer.searchproduct.SearchBar
+import br.notasocial.ui.viewmodel.customer.product.ProductViewModel
 import br.notasocial.ui.viewmodel.customer.userprofile.FavoritesUiState
 import br.notasocial.ui.viewmodel.customer.userprofile.FavoritesViewModel
 
@@ -47,8 +51,26 @@ fun FavoritesScreen(
     navigateToProduct: (String) -> Unit,
     viewModel: FavoritesViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
-
     val uiState = viewModel.uiState
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collect { event ->
+            when (event) {
+                is FavoritesViewModel.UiEvent.RemoveFavoriteSuccess -> {
+                    Toast.makeText(
+                        context,
+                        "Produto removido dos favoritos com sucesso!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                is FavoritesViewModel.UiEvent.ShowError -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
 
     Column(
         modifier = modifier
@@ -84,20 +106,20 @@ fun FavoritesTopSection(
             color = Color.Black,
             fontWeight = FontWeight.SemiBold,
             fontFamily = ralewayFamily,
-            modifier = Modifier.padding(bottom = 15.dp)
+            modifier = Modifier.padding(vertical = 15.dp)
         )
         Row(
             modifier = Modifier
         ) {
-            SearchBar(
-                placeholderText = stringResource(id = R.string.search_product_placeholder),
-                searchText = "",
-                onSearchChange = {},
-                searchProduct = {},
-                modifier = Modifier.weight(1f)
-            )
-            Spacer(modifier = Modifier.padding(10.dp))
-            FilterSearch()
+//            SearchBar(
+//                placeholderText = stringResource(id = R.string.search_product_placeholder),
+//                searchText = "",
+//                onSearchChange = {},
+//                searchProduct = {},
+//                modifier = Modifier.weight(1f)
+//            )
+//            Spacer(modifier = Modifier.padding(10.dp))
+//            FilterSearch()
         }
     }
 }
@@ -144,6 +166,7 @@ fun FavoritesGrid(
                 ) {
                     Text(
                         text = "Nenhum produto adicionado aos favoritos",
+                        color = Color.Black,
                         fontSize = 14.sp,
                         fontFamily = ralewayFamily,
                         fontWeight = FontWeight.Medium

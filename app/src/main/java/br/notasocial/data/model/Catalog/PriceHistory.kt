@@ -14,7 +14,7 @@ data class PriceHistory(
      */
     @SerializedName("price")
     val price: Double?,
-    @SerializedName("priceChangeDate")
+    @SerializedName("priceDate")
     val priceChangeDate: String?
 )
 

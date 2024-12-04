@@ -32,7 +32,7 @@ class UserProfileViewModel(
     val uiEvent = _uiEvent.asSharedFlow()
 
     sealed class UiEvent {
-        object LoginSuccess : UiEvent()
+        object AccountChangeSuccess : UiEvent()
         data class ShowError(val message: String) : UiEvent()
     }
 
@@ -94,12 +94,12 @@ class UserProfileViewModel(
 
                val response = authApiRepository.updateCustomer(token, customer)
                 if (response.isSuccessful) {
-                    Log.d("UserProfileViewModel", "Perfil do usuário atualizado com sucesso")
+                    _uiEvent.emit(UiEvent.AccountChangeSuccess)
                 } else {
-                    Log.e("UserProfileViewModel", "Erro ao atualizar perfil do usuário: ${response.code()}")
+                    _uiEvent.emit(UiEvent.ShowError("Erro ao atualizar perfil do usuário"))
                 }
             } catch (e: Exception) {
-                Log.e("UserProfileViewModel", "Erro ao atualizar perfil do usuário", e)
+                _uiEvent.emit(UiEvent.ShowError("Erro ao atualizar perfil do usuário"))
             }
         }
     }
@@ -114,12 +114,14 @@ class UserProfileViewModel(
                 if (response.isSuccessful) {
                     user = response.body()!!
                 } else {
+                    _uiEvent.emit(UiEvent.ShowError("Erro ao obter perfil do usuário"))
                     Log.e(
                         "UserProfileViewModel",
                         "Erro ao obter perfil do usuário: ${response.code()}"
                     )
                 }
             } catch (e: Exception) {
+                _uiEvent.emit(UiEvent.ShowError("Erro ao obter perfil do usuário"))
                 Log.e("UserProfileViewModel", "Erro ao obter perfil do usuário", e)
             }
         }

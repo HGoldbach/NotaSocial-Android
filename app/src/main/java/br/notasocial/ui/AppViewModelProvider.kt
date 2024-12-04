@@ -10,6 +10,7 @@ import br.notasocial.ui.viewmodel.CatalogViewModel
 import br.notasocial.ui.viewmodel.MainViewModel
 import br.notasocial.ui.viewmodel.QrCodeResultViewModel
 import br.notasocial.ui.viewmodel.QrCodeViewModel
+import br.notasocial.ui.viewmodel.customer.contact.ContactViewModel
 import br.notasocial.ui.viewmodel.customer.searchproduct.SearchProductViewModel
 import br.notasocial.ui.viewmodel.customer.home.HomeViewModel
 import br.notasocial.ui.viewmodel.customer.signin.SignInViewModel
@@ -17,6 +18,7 @@ import br.notasocial.ui.viewmodel.customer.product.ProductViewModel
 import br.notasocial.ui.viewmodel.customer.profile.ProfileViewModel
 import br.notasocial.ui.viewmodel.customer.ranking.RankingViewModel
 import br.notasocial.ui.viewmodel.customer.register.SignUpViewModel
+import br.notasocial.ui.viewmodel.customer.searchcategory.SearchCategoryViewModel
 import br.notasocial.ui.viewmodel.customer.searchstore.SearchStoreViewModel
 import br.notasocial.ui.viewmodel.customer.shoplist.ShopListViewModel
 import br.notasocial.ui.viewmodel.customer.storeprofile.StoreProfileViewModel
@@ -186,6 +188,16 @@ object AppViewModelProvider {
                 this.createSavedStateHandle(),
                 notaSocialApplication().container.storeDbRepository
             )
+        }
+        initializer {
+            SearchCategoryViewModel(
+                this.createSavedStateHandle(),
+                notaSocialApplication().container.productApiRepository,
+                notaSocialApplication().userPreferencesRepository
+            )
+        }
+        initializer {
+            ContactViewModel()
         }
 
     }

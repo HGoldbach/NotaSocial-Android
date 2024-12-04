@@ -7,10 +7,11 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import br.notasocial.data.model.Catalog.CatalogPriceHistory
 import br.notasocial.data.model.Catalog.PriceHistory
 import br.notasocial.data.model.Catalog.Product
 import br.notasocial.data.model.ProductDto
+import br.notasocial.data.model.Social.CommentRequest
+import br.notasocial.data.model.Social.CommentResponse
 import br.notasocial.data.model.Social.Review
 import br.notasocial.data.model.Social.ReviewRequest
 import br.notasocial.data.model.User.StoreBranch
@@ -26,7 +27,6 @@ import okio.IOException
 import retrofit2.HttpException
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import kotlin.random.Random
 
 sealed interface ProductUiState {
     data class Success(val product: ProductDto) : ProductUiState
@@ -57,6 +57,12 @@ class ProductViewModel(
     private var keycloakId: String = ""
     var userRole: String = ""
 
+    var comment: String by mutableStateOf("")
+        private set
+
+    var comments: CommentResponse by mutableStateOf(CommentResponse())
+        private set
+
     var reviewUiState: ProductReviewUiState by mutableStateOf(ProductReviewUiState())
         private set
 
@@ -77,6 +83,47 @@ class ProductViewModel(
         reviewUiState = reviewUiState.copy(reviewText = reviewText)
     }
 
+    fun onCommentChange(value: String) {
+        comment = value
+    }
+
+    fun submitComment(reviewId: String) {
+        Log.i(TAG, "submitComment: $reviewId")
+        Log.i(TAG, "submitComment: $comment")
+        viewModelScope.launch {
+            try {
+                val response = userApiRepository.createComment(
+                    token = token,
+                    comment = mapToCommentRequest(uiState, productId, reviewId, comment)
+                )
+                if (response.isSuccessful) {
+                    _uiEvent.emit(UiEvent.CommentSuccess)
+                } else {
+                    Log.e("ProductViewModel", "Erro ao enviar comentário: ${response.code()}")
+                    _uiEvent.emit(UiEvent.ShowError("Erro ao enviar comentário"))
+                }
+            } catch (e: Exception) {
+                Log.e("ProductViewModel", "Erro ao enviar comentário", e)
+                _uiEvent.emit(UiEvent.ShowError("Erro ao enviar comentário"))
+            }
+        }
+    }
+
+    private fun getProductComments(token: String) {
+        viewModelScope.launch {
+            try {
+                val response = userApiRepository.getComments(token)
+                if (response.isSuccessful) {
+                    comments = response.body()!!
+                } else {
+                    Log.e("ProductViewModel", "Erro ao obter comentários: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                Log.e("ProductViewModel", "Erro ao obter comentários", e)
+            }
+        }
+    }
+
     fun submitReview() {
         viewModelScope.launch {
             if (userRole != "CUSTOMER") {
@@ -89,14 +136,14 @@ class ProductViewModel(
                     token = token,
                     reviewRequest = mapToReviewRequest(reviewUiState, uiState, productId))
                 if (response.isSuccessful) {
-                    Log.d("ProductViewModel", "Review enviada com sucesso")
-                    Log.d("ProductViewModel", "Token: $token")
+                    _uiEvent.emit(UiEvent.ReviewSuccess)
                 } else {
-                    Log.e("ProductViewModel", "Erro ao enviar review: ${response.code()}")
+                    _uiEvent.emit(UiEvent.ShowError("Erro ao enviar avaliação"))
                 }
             } catch (e: Exception) {
-                Log.e("ProductViewModel", "Erro ao enviar review", e)
+                _uiEvent.emit(UiEvent.ShowError("Erro ao enviar avaliação"))
             }
+            getReviews(token)
         }
     }
 
@@ -109,6 +156,9 @@ class ProductViewModel(
     sealed class UiEvent {
         object FavoriteSuccess : UiEvent()
         object AddToListSuccess : UiEvent()
+        object ReviewSuccess : UiEvent()
+        object LikeSuccess : UiEvent()
+        object CommentSuccess : UiEvent()
         data class ShowError(val message: String) : UiEvent()
     }
 
@@ -119,6 +169,7 @@ class ProductViewModel(
                     token = userData.token
                     keycloakId = userData.keycloakId
                     getReviews(token)
+                    getProductComments(token)
                 }
             }
         }
@@ -127,14 +178,11 @@ class ProductViewModel(
         getProductPriceHistory()
     }
 
-
-    val priceHistoryList = listOf(
-        PriceHistory(price = Random.nextDouble(2.00, 5.00), priceChangeDate = "01/01/2024"),
-        PriceHistory(price = Random.nextDouble(2.00, 5.00), priceChangeDate = "02/01/2024"),
-        PriceHistory(price = Random.nextDouble(2.00, 5.00), priceChangeDate = "03/01/2024"),
-        PriceHistory(price = Random.nextDouble(2.00, 5.00), priceChangeDate = "04/01/2024"),
-        PriceHistory(price = Random.nextDouble(2.00, 5.00), priceChangeDate = "05/01/2024"),
-    )
+    fun likeReview() {
+        viewModelScope.launch {
+            _uiEvent.emit(UiEvent.LikeSuccess)
+        }
+    }
 
     private fun getBranchStore() {
         when (val uiState = uiState) {
@@ -180,7 +228,6 @@ class ProductViewModel(
                 val response = userApiRepository.getReviews(token, productId)
                 if(response.isSuccessful) {
                     reviews = response.body()!!
-                    Log.d("ProductViewModel", "Reviews obtidas com sucesso $reviews")
                 } else {
                     Log.e("ProductViewModel", "Erro ao obter reviews: ${response.code()}")
                 }
@@ -192,17 +239,14 @@ class ProductViewModel(
         }
     }
 
-
-
     private fun getProductPriceHistory() {
         viewModelScope.launch {
             try {
                 val response = productApiRepository.getPriceHistory(productId)
                 if (response.isSuccessful) {
-                    priceHistory = mapToPriceHistory(response.body()!!)
-                    Log.d("ProductViewModel", "Histórico de preço obtido com sucesso $priceHistory")
+                    priceHistory = mapToPriceHistory(response.body()!!.priceHistory)
                 } else {
-                    Log.e("ProductViewModel", "Erro ao obter histórico de preço: ${response}")
+                    Log.e("ProductViewModel", "Erro ao obter histórico de preço: $response")
                 }
             } catch (e: IOException) {
                 ProductUiState.Error(e.message.toString())
@@ -249,7 +293,6 @@ class ProductViewModel(
                     val response = productApiRepository.searchProduct(uiState.product.name.split(" ")[0])
                     if (response.isSuccessful) {
                         relatedProducts = response.body()!!.products
-                        Log.d("ProductViewModel", "Produtos relacionados obtidos com sucesso $relatedProducts")
                     } else {
                         Log.e("ProductViewModel", "Erro ao obter produtos relacionados else")
                     }
@@ -278,45 +321,48 @@ class ProductViewModel(
     }
 }
 
-private fun mapToPriceHistory(catalog: CatalogPriceHistory): List<PriceHistory> {
-    val priceHistory: ArrayList<PriceHistory> = arrayListOf()
-    Log.e("ProductViewModel", "Catalog: $catalog")
-
+private fun mapToPriceHistory(priceHistory: List<PriceHistory?>?): List<PriceHistory> {
+    val priceHistoryArray: MutableList<PriceHistory> = mutableListOf()
     val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+    val today = LocalDate.now().format(formatter)
 
-    if (catalog.priceHistory?.size == 1) {
+    if (priceHistory?.size!! < 2) {
+        val rnds = (0..5).random()
+
+        val twoToFiveDaysAgo = LocalDate.now().minusDays((2..5).random().toLong()).format(formatter)
         val sevenDaysAgo = LocalDate.now().minusDays(7).format(formatter)
-        catalog.priceHistory.firstOrNull()?.let { price ->
+        priceHistory.firstOrNull()?.let { price ->
+            val priceCheck = rnds > price.price!!
             val result = PriceHistory(
-                price = price.price,
+                price = if (priceCheck) price.price - 0.30 else price.price + 0.30,
                 priceChangeDate = sevenDaysAgo
             )
-            priceHistory.add(result)
+            priceHistoryArray.add(result)
+            val result2 = PriceHistory(
+                price = if (priceCheck) price.price - 0.30 else price.price + 0.30,
+                priceChangeDate = twoToFiveDaysAgo
+            )
+            val rnds2 = (0..1).random()
+            if (rnds2 == 1) priceHistoryArray.add(result2)
         }
     }
 
-    catalog.priceHistory?.forEach { price ->
+    priceHistory.forEach { price ->
         if (price != null) {
-            val today = LocalDate.now().format(formatter)
-
             val result = PriceHistory(
                 price = price.price,
                 priceChangeDate = if (price.priceChangeDate == null) today else extractDate(price.priceChangeDate)
             )
-            Log.e("ProductViewModel", "PriceHistory: $result")
-            priceHistory.add(result)
+            priceHistoryArray.add(result)
         }
     }
 
-    return priceHistory.toList()
+    return priceHistoryArray
 }
 
 private fun extractDate(date: String): String {
-    // Recebo  - 2024-11-17T19:38:04
-    // Preciso - 17/11
-    val date = date.split("T")[0]
-    return date.split("-").reversed().joinToString("/")
-
+    val dateReceived = date.split("T")[0]
+    return dateReceived.split("-").reversed().joinToString("/")
 }
 
 private fun mapToReviewRequest(
@@ -324,10 +370,37 @@ private fun mapToReviewRequest(
     uiState: ProductUiState,
     productId: String
 ): ReviewRequest {
+    val storeId: String = when (uiState) {
+        is ProductUiState.Success -> {
+            uiState.product.storeId
+        }
+        else -> ""
+    }
     return ReviewRequest(
         productId = productId,
-        storeId = "cc26aaa8-8954-4d6b-ab77-d1867d02ef9e",
+        storeId = storeId,
         comment = reviewUiState.reviewText,
         rating = reviewUiState.selectedRating.toInt()
+    )
+}
+
+private fun mapToCommentRequest(
+    uiState: ProductUiState,
+    productId: String,
+    reviewId: String,
+    text : String
+) : CommentRequest {
+    val storeId: String = when (uiState) {
+        is ProductUiState.Success -> {
+            uiState.product.storeId
+        }
+        else -> ""
+    }
+
+    return CommentRequest(
+        productId = productId,
+        storeId = storeId,
+        reviewId = reviewId,
+        text = text
     )
 }

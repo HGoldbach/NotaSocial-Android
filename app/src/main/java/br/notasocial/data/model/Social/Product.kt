@@ -1,6 +1,5 @@
 package br.notasocial.data.model.Social
 
-import br.notasocial.data.model.Catalog.Category
 //
 //data class Product(
 //    val id: String,

@@ -10,6 +10,9 @@ import androidx.lifecycle.viewModelScope
 import br.notasocial.data.repository.StoreDbRepository
 import br.notasocial.ui.view.customer.product.ProductDestination
 import br.notasocial.ui.view.store.StorePromotionDetailsDestination
+import br.notasocial.ui.viewmodel.store.AddressViewModel.UiEvent
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 class PromotionDetailsViewModel(
@@ -22,15 +25,22 @@ class PromotionDetailsViewModel(
     var uiState: PromotionDetailsUiState by mutableStateOf(PromotionDetailsUiState())
         private set
 
+    private val _uiEvent = MutableSharedFlow<UiEvent>()
+    val uiEvent = _uiEvent.asSharedFlow()
+
+    sealed class UiEvent {
+        object RemoveSuccess : UiEvent()
+        data class ShowError(val message: String) : UiEvent()
+    }
     init {
         loadPromotionsById()
     }
 
     private fun parseProducts(input: String): List<Pair<String, String>> {
-        return input.split(",") // Dividir a string em uma lista de produtos
+        return input.split(",")
             .map {
-                val parts = it.split(":") // Dividir cada produto em nome e descrição
-                Pair(parts[0], parts[1]) // Criar um Pair de nome e descrição
+                val parts = it.split(":")
+                Pair(parts[0], parts[1])
             }
     }
 
@@ -43,7 +53,7 @@ class PromotionDetailsViewModel(
                     promotion = promotion
                 )
             } catch (e: Exception) {
-                // Tratar erro, como falha ao acessar o banco de dados
+                _uiEvent.emit(UiEvent.ShowError("Erro ao carregar promoção"))
                 Log.e("PromotionViewModel", "Error loading promotions by storeId", e)
             }
         }
@@ -53,7 +63,9 @@ class PromotionDetailsViewModel(
         viewModelScope.launch {
             try {
                 storeDbRepository.deletePromotion(promotionId)
+                _uiEvent.emit(UiEvent.RemoveSuccess)
             } catch (e: Exception) {
+                _uiEvent.emit(UiEvent.ShowError("Erro ao remover promoção"))
                 Log.e("PromotionViewModel", "Error removing promotion", e)
             }
         }

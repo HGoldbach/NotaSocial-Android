@@ -35,7 +35,7 @@ interface AppContainer {
 class DefaultAppContainer(private val context: Context) : AppContainer {
 
     private val retrofit: Retrofit = Retrofit.Builder()
-        .baseUrl("https://7929-2001-1284-f502-aa4f-d8d1-93b9-d6cf-351d.ngrok-free.app/")
+        .baseUrl("https://70c5-2804-d55-760f-4800-e4d7-2aee-8eb6-1e6b.ngrok-free.app/")
         .addConverterFactory(GsonConverterFactory.create(GsonBuilder().create()))
         .build()
 

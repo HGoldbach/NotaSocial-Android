@@ -16,10 +16,12 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -75,7 +77,7 @@ fun ProductReviewDialog(
                     ) {
                         Text(
                             text = textTitleCase(product.name),
-                            fontSize = 16.sp,
+                            fontSize = 12.sp,
                             color = Color.Black,
                             fontWeight = FontWeight.SemiBold,
                             fontFamily = ralewayFamily,
@@ -129,6 +131,7 @@ fun ProductReviewDialog(
                             )
                             Text(
                                 text = text,
+                                color = Color.Black,
                                 fontSize = 10.sp,
                                 modifier = Modifier.padding(start = 10.dp, end = 10.dp)
                             )
@@ -148,17 +151,18 @@ fun ProductReviewDialog(
                         fontFamily = ralewayFamily,
                         modifier = Modifier.padding(bottom = 10.dp)
                     )
-                    TextField(
+                    OutlinedTextField(
                         value = reviewText,
                         onValueChange = { onReviewTextChange(it) },
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.hsl(360f, 0.0f, 0.97f, 1f),
+                            unfocusedContainerColor = Color.hsl(360f, 0.0f, 0.97f, 1f),
+                            focusedTextColor = Color.Black,
+                            unfocusedTextColor = Color.Black,
+                        ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(100.dp)
-                            .border(
-                                width = 1.dp,
-                                color = Color.Black,
-                                shape = RoundedCornerShape(8.dp)
-                            ),
+                            .height(100.dp),
                         textStyle = TextStyle(fontSize = 12.sp)
                     )
                 }
@@ -175,7 +179,8 @@ fun ProductReviewDialog(
                         },
                         shape = RoundedCornerShape(10.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.hsl(123f, 0.66f, 0.33f, 1f)
+                            containerColor = Color.hsl(123f, 0.66f, 0.33f, 1f),
+                            contentColor = Color.White
                         )
                     ) {
                         Text(

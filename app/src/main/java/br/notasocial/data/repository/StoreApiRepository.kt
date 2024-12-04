@@ -11,6 +11,7 @@ interface StoreApiRepository {
     suspend fun getStores() : Response<StoreResponse>
     suspend fun getBranchStore(storeId: String) : Response<StoreBranch>
     suspend fun getStoreById(storeId: String) : Response<Store>
+    suspend fun searchStore(name: String) : Response<StoreResponse>
 }
 
 class StoreApiRepositoryImpl(
@@ -28,5 +29,11 @@ class StoreApiRepositoryImpl(
 
     override suspend fun getStoreById(storeId: String) : Response<Store> {
         return storeApiService.getStoreById(storeId)
+    }
+
+    override suspend fun searchStore(name: String) : Response<StoreResponse> {
+        return storeApiService.searchStore(
+            page = "0", size = "20", sortDirection = "ASC", sortBy = "name", firstname = name
+        )
     }
 }

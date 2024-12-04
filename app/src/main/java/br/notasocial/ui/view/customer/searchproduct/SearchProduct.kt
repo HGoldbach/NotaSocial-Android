@@ -38,6 +38,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -139,8 +140,8 @@ fun SearchProductTopSection(
             placeholderText = stringResource(id = R.string.search_product_placeholder),
             modifier = Modifier.weight(1f)
         )
-        Spacer(modifier = Modifier.padding(10.dp))
-        FilterSearch()
+//        Spacer(modifier = Modifier.padding(10.dp))
+//        FilterSearch()
     }
 }
 
@@ -235,6 +236,7 @@ fun SearchBar(
             Icon(
                 painter = painterResource(R.drawable.search_regular),
                 contentDescription = "",
+                tint = Color.Black,
                 modifier = Modifier.size(16.dp)
             )
         },
@@ -249,10 +251,12 @@ fun SearchBar(
             Text(
                 text = placeholderText,
                 fontFamily = ralewayFamily,
+                color = Color.Black,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
             )
         },
+        textStyle = TextStyle(color = Color.Black),
         keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
         modifier = modifier
@@ -274,6 +278,7 @@ fun FilterSearch(
         Icon(
             painter = painterResource(id = R.drawable.filter_solid),
             contentDescription = "",
+            tint = Color.Black,
             modifier = Modifier.size(18.dp)
         )
     }

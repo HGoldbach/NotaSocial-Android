@@ -38,9 +38,6 @@ class SearchProductViewModel(
     private val _searchText = MutableStateFlow("")
     val searchText = _searchText.asStateFlow()
 
-    private val _product = MutableStateFlow(Product())
-    val product = _product.asStateFlow()
-
     var userRole: String by mutableStateOf("")
     private var token: String by mutableStateOf("")
 

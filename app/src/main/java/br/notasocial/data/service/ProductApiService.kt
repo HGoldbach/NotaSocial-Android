@@ -95,4 +95,12 @@ interface ProductApiService {
         @Path("productId") productId: String,
     ) : Response<Unit>
 
+    @GET("catalog/product/by-category")
+    suspend fun getProductsByCategory(
+        @Query("categoryId") categoryId: Long,
+        @Query("page") page: String,
+        @Query("size") size: String,
+        @Query("sortDirection") sortDirection: String,
+        @Query("sortBy") sortBy: String,
+    ): Response<CatalogProduct>
 }

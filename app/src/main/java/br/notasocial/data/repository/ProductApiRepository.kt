@@ -21,6 +21,7 @@ interface ProductApiRepository {
     suspend fun reviewProduct(token: String, productId: String,  reviewRequest: ReviewRequest) : Response<Unit>
     suspend fun getProductsDetails(token: String, productIds: List<String>) : Response<CatalogProduct>
     suspend fun removeFavorite(token: String, productId: String) : Response<Unit>
+    suspend fun getProductsByCategory(categoryId: Long) : Response<CatalogProduct>
 }
 
 class ProductApiRepositoryImpl(
@@ -69,5 +70,9 @@ class ProductApiRepositoryImpl(
 
     override suspend fun removeFavorite(token: String, productId: String) : Response<Unit> {
         return productApiService.removeFavorite("Bearer $token", productId)
+    }
+
+    override suspend fun getProductsByCategory(categoryId: Long) : Response<CatalogProduct> {
+        return productApiService.getProductsByCategory(categoryId, page = "0", size = "20", sortDirection = "ASC", sortBy = "code")
     }
 }

@@ -3,6 +3,7 @@ package br.notasocial.ui.view.customer.home
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -55,6 +55,8 @@ object HomeDestination : NavigationDestination {
 @Composable
 fun HomeScreen(
     navigateToProduct: (String) -> Unit,
+    navigateToSearchProduct: () -> Unit,
+    navigateToSearchCategory: (Int, String, String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
@@ -89,9 +91,12 @@ fun HomeScreen(
     ) {
         NotaSocialTitle()
         Spacer(modifier = Modifier.height(25.dp))
-        SlideSection()
+        SlideSection(
+            navigateToSearchProduct = navigateToSearchProduct
+        )
         Spacer(modifier = Modifier.height(25.dp))
         CategorySection(
+            navigateToSearchCategory = navigateToSearchCategory,
             uiState = categoryUiState,
         )
         Spacer(modifier = Modifier.height(25.dp))
@@ -134,7 +139,8 @@ fun NotaSocialTitle(
 
 @Composable
 fun SlideSection(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navigateToSearchProduct: () -> Unit
 ) {
     Column(
         modifier = modifier
@@ -151,14 +157,14 @@ fun SlideSection(
                 color = Color.hsl(128f, .52f, .47f, 1f),
                 fontFamily = ralewayFamily,
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 18.sp
+                fontSize = 16.sp
             )
             Text(
                 text = " onde estão os produtos mais",
                 color = Color.Black,
                 fontFamily = ralewayFamily,
                 fontWeight = FontWeight.Medium,
-                fontSize = 18.sp
+                fontSize = 16.sp
             )
         }
         Row(
@@ -177,20 +183,6 @@ fun SlideSection(
                     tint = Color.hsl(123f, .63f, .33f, 1f),
                     modifier = modifier.size(14.dp)
                 )
-                Spacer(modifier = Modifier.width(5.dp))
-                Icon(
-                    painter = painterResource(id = R.drawable.circle_solid),
-                    contentDescription = "",
-                    tint = Color.hsl(0f, 0f, .85f, 1f),
-                    modifier = modifier.size(14.dp)
-                )
-                Spacer(modifier = Modifier.width(5.dp))
-                Icon(
-                    painter = painterResource(id = R.drawable.circle_solid),
-                    contentDescription = "",
-                    tint = Color.hsl(0f, 0f, .85f, 1f),
-                    modifier = modifier.size(14.dp)
-                )
             }
             Text(
                 text = stringResource(id = R.string.search_product),
@@ -198,7 +190,8 @@ fun SlideSection(
                 textDecoration = TextDecoration.Underline,
                 fontFamily = ralewayFamily,
                 fontWeight = FontWeight.Light,
-                fontSize = 14.sp
+                fontSize = 14.sp,
+                modifier = Modifier.clickable { navigateToSearchProduct() }
             )
         }
     }
@@ -207,6 +200,7 @@ fun SlideSection(
 @Composable
 fun CategorySection(
     uiState: CategoryHomeUiState,
+    navigateToSearchCategory: (Int, String, String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -240,7 +234,16 @@ fun CategorySection(
         }
     }
     when (uiState) {
-        is CategoryHomeUiState.Error -> Text(text = uiState.errorMessage)
+        is CategoryHomeUiState.Error -> Column(
+            modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = "Erro ao carregar categorias",
+                fontFamily = ralewayFamily,
+                fontSize = 12.sp
+            )
+        }
         is CategoryHomeUiState.Loading ->
             Column(
                 modifier = Modifier.fillMaxWidth().height(100.dp),
@@ -259,7 +262,8 @@ fun CategorySection(
             ) {
                 items(items = uiState.categories, key = { it.id }) { category ->
                     CategoryItem(
-                        categoryImage = category.image,
+                        navigateToSearchCategory = navigateToSearchCategory,
+                        category = category,
                         text = category.name
                     )
                 }
@@ -308,7 +312,16 @@ fun LastUpdatesSection(
         }
     }
     when (uiState) {
-        is HomeUiState.Error -> Text(text = uiState.errorMessage)
+        is HomeUiState.Error -> Column(
+            modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = "Erro ao carregar produtos",
+                fontFamily = ralewayFamily,
+                fontSize = 12.sp
+            )
+        }
         is HomeUiState.Loading ->
             Column(
                 modifier = Modifier.fillMaxWidth().height(100.dp),
@@ -355,7 +368,7 @@ fun NotaSocialTitlePreview() {
 @Composable
 fun SlideSectionPreview() {
     NotasocialTheme {
-        SlideSection()
+        SlideSection(navigateToSearchProduct = {})
     }
 }
 
@@ -364,7 +377,7 @@ fun SlideSectionPreview() {
 fun HomeScreenPreview() {
     NotasocialTheme {
         HomeScreen(
-            {}
+            {},{},{_,_,_ ->}
         )
     }
 }

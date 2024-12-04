@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,6 +27,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -42,6 +45,8 @@ import br.notasocial.ui.theme.NotasocialTheme
 import br.notasocial.ui.theme.interFamily
 import br.notasocial.ui.theme.ralewayFamily
 import br.notasocial.ui.viewmodel.customer.ranking.RankingViewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 
 object RankingDestination : NavigationDestination {
     override val route = "ranking"
@@ -74,10 +79,15 @@ fun RankingScreen(
                     )
                 }
             } else {
-                Text("Carregando...", modifier = Modifier.align(Alignment.CenterHorizontally))
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text("Carregando...", modifier = Modifier.align(Alignment.CenterHorizontally), color = Color.Black)
+                }
             }
 //            PageList()
-
         }
     }
 }
@@ -187,11 +197,13 @@ fun RankingList(
                 fontFamily = ralewayFamily,
                 fontWeight = FontWeight.ExtraLight,
                 fontSize = 12.sp,
+                color = Color.Black,
                 modifier = Modifier.width(50.dp),
                 textAlign = TextAlign.Center
             )
             Text(
                 text = "Nome",
+                color = Color.Black,
                 fontFamily = ralewayFamily,
                 fontWeight = FontWeight.ExtraLight,
                 fontSize = 12.sp,
@@ -199,6 +211,7 @@ fun RankingList(
             Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = "Notas",
+                color = Color.Black,
                 fontFamily = ralewayFamily,
                 fontWeight = FontWeight.ExtraLight,
                 fontSize = 12.sp,
@@ -206,6 +219,7 @@ fun RankingList(
             )
             Text(
                 text = "Produtos",
+                color = Color.Black,
                 fontFamily = ralewayFamily,
                 fontWeight = FontWeight.ExtraLight,
                 fontSize = 12.sp,
@@ -240,6 +254,7 @@ fun RankingItem(
             text = "${position}º",
             modifier = Modifier.width(50.dp),
             fontFamily = interFamily,
+            color = Color.Black,
             fontSize = 12.sp,
             textAlign = TextAlign.Center
         )
@@ -248,23 +263,31 @@ fun RankingItem(
             color = Color.hsl(0f, 0f, .97f, 1f),
             shape = CircleShape
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.user_solid),
+            AsyncImage(
+                model = ImageRequest.Builder(context = LocalContext.current)
+                    .data(ranking.urlImage)
+                    .crossfade(true)
+                    .build(),
+                error = painterResource(R.drawable.nota_social_typho),
+                placeholder = painterResource(R.drawable.loading_img),
                 contentDescription = "",
-                tint = Color.hsl(123f, .63f, .33f, 1f),
-                modifier = Modifier.padding(20.dp)
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.fillMaxHeight()
             )
         }
         Text(
             text = ranking.name,
+            color = Color.Black,
             fontFamily = ralewayFamily,
             fontWeight = FontWeight.Normal,
-            fontSize = 12.sp
+            fontSize = 12.sp,
+            modifier = Modifier.padding(start = 10.dp)
         )
         Spacer(modifier = Modifier.weight(1f))
         Text(
             text = "${ranking.totalReceipts}",
             modifier = Modifier.width(80.dp),
+            color = Color.Black,
             fontFamily = interFamily,
             fontSize = 12.sp,
             textAlign = TextAlign.Center
@@ -273,6 +296,7 @@ fun RankingItem(
             text = "${ranking.totalProducts}",
             modifier = Modifier.width(60.dp),
             fontFamily = interFamily,
+            color = Color.Black,
             fontSize = 12.sp,
             textAlign = TextAlign.Center
         )
@@ -303,11 +327,17 @@ fun RankingTopSection(
                 color = Color.hsl(0f, 0f, .99f, 1f),
                 shape = CircleShape
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.user_solid),
+                AsyncImage(
+                    model = ImageRequest.Builder(context = LocalContext.current)
+                        .data(ranking[1].urlImage)
+                        .crossfade(true)
+                        .build(),
+                    error = painterResource(R.drawable.nota_social_typho),
+                    placeholder = painterResource(R.drawable.loading_img),
                     contentDescription = "",
-                    tint = Color.hsl(128f, .52f, .47f, 1f),
-                    modifier = Modifier.padding(15.dp)
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .fillMaxWidth()
                 )
             }
             Column(
@@ -324,7 +354,9 @@ fun RankingTopSection(
             ) {
                 if (ranking.size > 1) {
                     Text(
-                        text = ranking[1].name
+                        text = ranking[1].name,
+                        fontFamily = ralewayFamily,
+                        color = Color.Black
                     )
                     Row(
                     ) {
@@ -338,9 +370,11 @@ fun RankingTopSection(
                             text = "${ranking[1].totalReceipts}",
                             modifier = Modifier.padding(start = 5.dp),
                             fontFamily = interFamily,
+                            color = Color.Black,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 10.sp
                         )
+                        Spacer(modifier = Modifier.width(10.dp))
                         Icon(
                             painter = painterResource(id = R.drawable.product_solid),
                             contentDescription = "",
@@ -349,6 +383,7 @@ fun RankingTopSection(
                         )
                         Text(
                             text = "${ranking[1].totalProducts}",
+                            color = Color.Black,
                             modifier = Modifier.padding(start = 5.dp),
                             fontFamily = interFamily,
                             fontWeight = FontWeight.SemiBold,
@@ -375,11 +410,17 @@ fun RankingTopSection(
                 color = Color.hsl(0f, 0f, .99f, 1f),
                 shape = CircleShape
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.user_solid),
+                AsyncImage(
+                    model = ImageRequest.Builder(context = LocalContext.current)
+                        .data(ranking[0].urlImage)
+                        .crossfade(true)
+                        .build(),
+                    error = painterResource(R.drawable.nota_social_typho),
+                    placeholder = painterResource(R.drawable.loading_img),
                     contentDescription = "",
-                    tint = Color.hsl(128f, .52f, .47f, 1f),
-                    modifier = Modifier.padding(15.dp)
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .fillMaxWidth()
                 )
             }
             Column(
@@ -394,7 +435,9 @@ fun RankingTopSection(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = ranking[0].name
+                    text = ranking[0].name,
+                    fontFamily = ralewayFamily,
+                    color = Color.Black
                 )
                 Row() {
                     Icon(
@@ -407,9 +450,11 @@ fun RankingTopSection(
                         text = "${ranking[0].totalReceipts}",
                         modifier = Modifier.padding(start = 5.dp),
                         fontFamily = interFamily,
+                        color = Color.Black,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 10.sp
                     )
+                    Spacer(modifier = Modifier.width(10.dp))
                     Icon(
                         painter = painterResource(id = R.drawable.product_solid),
                         contentDescription = "",
@@ -419,16 +464,21 @@ fun RankingTopSection(
                     Text(
                         text = "${ranking[0].totalProducts}",
                         modifier = Modifier.padding(start = 5.dp),
+                        color = Color.Black,
                         fontFamily = interFamily,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 10.sp
                     )
                 }
-                Image(
-                    painter = painterResource(id = R.drawable.gold_medal),
-                    contentDescription = "",
-                    modifier = Modifier.size(40.dp)
-                )
+                Column(
+                    modifier = Modifier.padding(top = 10.dp),
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.gold_medal),
+                        contentDescription = "",
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
             }
         }
 
@@ -447,11 +497,17 @@ fun RankingTopSection(
                 color = Color.hsl(0f, 0f, .99f, 1f),
                 shape = CircleShape
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.user_solid),
+                AsyncImage(
+                    model = ImageRequest.Builder(context = LocalContext.current)
+                        .data(ranking[2].urlImage)
+                        .crossfade(true)
+                        .build(),
+                    error = painterResource(R.drawable.nota_social_typho),
+                    placeholder = painterResource(R.drawable.loading_img),
                     contentDescription = "",
-                    tint = Color.hsl(128f, .52f, .47f, 1f),
-                    modifier = Modifier.padding(15.dp)
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .fillMaxWidth()
                 )
             }
             Column(
@@ -468,7 +524,9 @@ fun RankingTopSection(
             ) {
                 if (ranking.size > 2) {
                     Text(
-                        text = "${ranking[2].name}"
+                        text = "${ranking[2].name}",
+                        fontFamily = ralewayFamily,
+                        color = Color.Black
                     )
                     Row(
                     ) {
@@ -481,10 +539,12 @@ fun RankingTopSection(
                         Text(
                             text = "${ranking[2].totalReceipts}",
                             modifier = Modifier.padding(start = 5.dp),
+                            color = Color.Black,
                             fontFamily = interFamily,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 10.sp
                         )
+                        Spacer(modifier = Modifier.width(10.dp))
                         Icon(
                             painter = painterResource(id = R.drawable.product_solid),
                             contentDescription = "",
@@ -494,6 +554,7 @@ fun RankingTopSection(
                         Text(
                             text = "${ranking[2].totalProducts}",
                             modifier = Modifier.padding(start = 5.dp),
+                            color = Color.Black,
                             fontFamily = interFamily,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 10.sp

@@ -8,9 +8,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.notasocial.data.model.StoreDb.AddressDb
-import br.notasocial.data.model.StoreDb.PromotionDb
 import br.notasocial.data.repository.StoreDbRepository
 import br.notasocial.data.repository.UserPreferencesRepository
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 class AddressViewModel(
@@ -21,6 +22,15 @@ class AddressViewModel(
     private var keycloakId: String by mutableStateOf("")
     var uiState: AddressUiState by mutableStateOf(AddressUiState())
         private set
+
+    private val _uiEvent = MutableSharedFlow<UiEvent>()
+    val uiEvent = _uiEvent.asSharedFlow()
+
+    sealed class UiEvent {
+        object AddressSuccess : UiEvent()
+        object AddressRemoveSuccess : UiEvent()
+        data class ShowError(val message: String) : UiEvent()
+    }
 
     init {
         viewModelScope.launch {
@@ -40,7 +50,7 @@ class AddressViewModel(
                 val addresses = storeDbRepository.getAddressesByStoreId(storeId)
                 uiState = uiState.copy(addresses = addresses)
             } catch (e: Exception) {
-                // Tratar erro, como falha ao acessar o banco de dados
+                _uiEvent.emit(UiEvent.ShowError("Erro ao carregar endereços"))
                 Log.e("PromotionViewModel", "Error loading promotions by storeId", e)
             }
         }
@@ -50,7 +60,9 @@ class AddressViewModel(
         viewModelScope.launch {
             try {
                 storeDbRepository.removeAddress(addressId)
+                _uiEvent.emit(UiEvent.AddressRemoveSuccess)
             } catch (e: Exception) {
+                _uiEvent.emit(UiEvent.ShowError("Erro ao remover endereço"))
                 Log.e("AddressViewModel", "Error removing address", e)
             }
         }
@@ -73,12 +85,10 @@ class AddressViewModel(
         viewModelScope.launch {
             try {
                 storeDbRepository.insertAddress(addressData)
-                // Caso tenha sucesso, pode atualizar o estado ou mostrar uma mensagem de sucesso
-                // Exemplo: exibir uma mensagem de sucesso ou navegar para outra tela
+                _uiEvent.emit(UiEvent.AddressSuccess)
             } catch (e: Exception) {
+                _uiEvent.emit(UiEvent.ShowError("Erro ao salvar endereço"))
                 Log.e("AddressViewModel", "Error saving promotion", e)
-                // Tratar erro, exibir mensagem de falha
-                // Exemplo: exibir uma mensagem de erro
             }
         }
     }

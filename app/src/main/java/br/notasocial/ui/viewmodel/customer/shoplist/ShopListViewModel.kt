@@ -35,23 +35,17 @@ class ShopListViewModel(
     var products: List<Product> by mutableStateOf(emptyList())
         private set
 
-    private fun observeUserProducts() {
-        viewModelScope.launch {
-            userPreferencesRepository.currentUserProductsId.collect { products ->
-                userProductsId = products
-            }
-        }
-    }
 
     fun onCepChange(newCep: String) {
         cep = newCep
     }
 
     init {
-        observeUserProducts()
+        Log.i(TAG, "init: $userProductsId")
         viewModelScope.launch {
             userPreferencesRepository.currentUserData.collect { user ->
                 if (user.token.isNotEmpty()) {
+                    userProductsId = user.productsId
                     token = user.token
                     getProductsDetails(token, userProductsId)
                     addProductsToShoppingList(token, userProductsId)

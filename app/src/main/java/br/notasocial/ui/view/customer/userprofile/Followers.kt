@@ -79,17 +79,6 @@ fun FollowersTopSection(
             fontFamily = ralewayFamily,
             modifier = Modifier.padding(vertical = 15.dp)
         )
-        Row {
-            SearchBar(
-                placeholderText = stringResource(id = R.string.followers_input_placeholder),
-                searchText = "",
-                onSearchChange = {},
-                searchProduct = {},
-                modifier = Modifier.weight(1f)
-            )
-            Spacer(modifier = Modifier.padding(10.dp))
-            FilterSearch()
-        }
     }
 }
 
@@ -108,6 +97,7 @@ fun FollowesGrid(
             Text(
                 text = "Nenhum usuário encontrado",
                 fontSize = 14.sp,
+                color = Color.Black,
                 fontFamily = ralewayFamily,
                 fontWeight = FontWeight.Medium
             )

@@ -91,7 +91,8 @@ fun ShopListScreen(
                     cep = viewModel.cep,
                     shoppingListInfo = viewModel.shoppingListInfo,
                     onCalculateDistance = viewModel::calculateDistance,
-                    onCepChange = viewModel::onCepChange
+                    onCepChange = viewModel::onCepChange,
+                    valueSum = viewModel.products.sumOf { it.price!! }
                 )
             }
         }
@@ -254,6 +255,7 @@ fun ShopListDistance(
     onCepChange: (String) -> Unit,
     onCalculateDistance: () -> Unit,
     shoppingListInfo: ShoppingListResponse?,
+    valueSum: Double,
 ) {
     Column(
         modifier = modifier.fillMaxWidth()
@@ -304,6 +306,7 @@ fun ShopListDistance(
                     Text(
                         text = "Buscar",
                         fontFamily = ralewayFamily,
+                        color = Color.White,
                         fontSize = 14.sp
                     )
                 }
@@ -353,7 +356,7 @@ fun ShopListDistance(
                         modifier = Modifier.weight(1f)
                     )
                     Text(
-                        text = formatPrice(it.totalPrice),
+                        text = formatPrice(valueSum),
                         fontSize = 12.sp,
                         color = Color.Black,
                         fontWeight = FontWeight.SemiBold,
@@ -381,90 +384,90 @@ object NumberDefaults {
     const val INPUT_LENGTH = 8 // Equals to "#####-###".count { it == '#' }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun ShopListGridPreview() {
-    val mockProducts = listOf(
-        Product(
-            id = "1",
-            name = "Pao Forma Seven Boys",
-            price = 6.69,
-            category = Category(1, "Padaria", ""),
-            image = "",
-            code = "",
-            storeId = "",
-            unit = ""
-        ),
-        Product(
-            id = "2",
-            name = "Pao Forma Seven Boys",
-            price = 6.69,
-            category = Category(1, "Padaria", ""),
-            image = "",
-            code = "",
-            storeId = "",
-            unit = ""
-        ),
-        Product(
-            id = "3",
-            name = "Pao Forma Seven Boys",
-            price = 6.69,
-            category = Category(1, "Padaria", ""),
-            image = "",
-            code = "",
-            storeId = "",
-            unit = ""
-        ),
-    )
-    NotasocialTheme {
-        ShopListGrid(
-            products = mockProducts,
-            onRemoveClick = {}
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ShopListSummaryPreview() {
-    NotasocialTheme {
-        val mockProducts = listOf(
-            Product(
-                id = "1",
-                name = "Pao Forma Seven Boys",
-                price = 6.69,
-                category = Category(1, "Padaria", ""),
-                image = "",
-                code = "",
-                storeId = "",
-                unit = ""
-            ),
-            Product(
-                id = "2",
-                name = "Pao Forma Seven Boys",
-                price = 6.69,
-                category = Category(1, "Padaria", ""),
-                image = "",
-                code = "",
-                storeId = "",
-                unit = ""
-            ),
-            Product(
-                id = "3",
-                name = "Pao Forma Seven Boys",
-                price = 6.69,
-                category = Category(1, "Padaria", ""),
-                image = "",
-                code = "",
-                storeId = "",
-                unit = ""
-            ),
-        )
-        ShopListSummary(
-            products = mockProducts
-        )
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun ShopListGridPreview() {
+//    val mockProducts = listOf(
+//        Product(
+//            id = "1",
+//            name = "Pao Forma Seven Boys",
+//            price = 6.69,
+//            category = Category(1, "Padaria", ""),
+//            image = "",
+//            code = "",
+//            storeId = "",
+//            unit = ""
+//        ),
+//        Product(
+//            id = "2",
+//            name = "Pao Forma Seven Boys",
+//            price = 6.69,
+//            category = Category(1, "Padaria", ""),
+//            image = "",
+//            code = "",
+//            storeId = "",
+//            unit = ""
+//        ),
+//        Product(
+//            id = "3",
+//            name = "Pao Forma Seven Boys",
+//            price = 6.69,
+//            category = Category(1, "Padaria", ""),
+//            image = "",
+//            code = "",
+//            storeId = "",
+//            unit = ""
+//        ),
+//    )
+//    NotasocialTheme {
+//        ShopListGrid(
+//            products = mockProducts,
+//            onRemoveClick = {}
+//        )
+//    }
+//}
+//
+//@Preview(showBackground = true)
+//@Composable
+//fun ShopListSummaryPreview() {
+//    NotasocialTheme {
+//        val mockProducts = listOf(
+//            Product(
+//                id = "1",
+//                name = "Pao Forma Seven Boys",
+//                price = 6.69,
+//                category = Category(1, "Padaria", ""),
+//                image = "",
+//                code = "",
+//                storeId = "",
+//                unit = ""
+//            ),
+//            Product(
+//                id = "2",
+//                name = "Pao Forma Seven Boys",
+//                price = 6.69,
+//                category = Category(1, "Padaria", ""),
+//                image = "",
+//                code = "",
+//                storeId = "",
+//                unit = ""
+//            ),
+//            Product(
+//                id = "3",
+//                name = "Pao Forma Seven Boys",
+//                price = 6.69,
+//                category = Category(1, "Padaria", ""),
+//                image = "",
+//                code = "",
+//                storeId = "",
+//                unit = ""
+//            ),
+//        )
+//        ShopListSummary(
+//            products = mockProducts
+//        )
+//    }
+//}
 
 
 @Preview(showBackground = true)

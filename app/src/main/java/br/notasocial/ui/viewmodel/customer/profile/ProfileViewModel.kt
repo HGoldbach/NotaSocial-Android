@@ -7,7 +7,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import br.notasocial.data.model.Receipt.Receipt
 import br.notasocial.data.model.Social.Review
 import br.notasocial.data.model.User.UserResponse
@@ -15,6 +14,8 @@ import br.notasocial.data.repository.NotaSocialApiRepository
 import br.notasocial.data.repository.UserApiRepository
 import br.notasocial.data.repository.UserPreferencesRepository
 import br.notasocial.ui.view.customer.profile.ProfileDestination
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 class ProfileViewModel(
@@ -30,10 +31,21 @@ class ProfileViewModel(
     private val TAG = "ProfileViewModel"
     private var userLoggedKeycloakId: String = ""
 
+    private val _uiEvent = MutableSharedFlow<UiEvent>()
+    val uiEvent = _uiEvent.asSharedFlow()
+
+    sealed class UiEvent {
+        object FollowSuccess : UiEvent()
+        data class ShowError(val message: String) : UiEvent()
+    }
+
     var user: UserResponse by mutableStateOf(UserResponse())
         private set
 
     var isUserFollowing: Boolean by mutableStateOf(false)
+        private set
+
+    var isUserProfile: Boolean by mutableStateOf(false)
         private set
 
     var reviews: List<Review> by mutableStateOf(emptyList())
@@ -86,6 +98,7 @@ class ProfileViewModel(
                 val response = userApiRepository.getUserProfile(token, userKeycloakId)
                 if (response.isSuccessful) {
                     user = response.body()!!
+                    isUserProfile = user.keycloakId == userLoggedKeycloakId
                 } else {
                     Log.e("ProfileViewModel", "Erro ao obter perfil do usuário: ${response.code()}")
                 }
@@ -156,12 +169,12 @@ class ProfileViewModel(
             try {
                 val response = userApiRepository.followUser(token, userKeycloakId)
                 if (response.isSuccessful) {
-                    Log.d("ProfileViewModel", "Usuário seguido com sucesso")
+                    _uiEvent.emit(UiEvent.FollowSuccess)
                 } else {
-                    Log.e("ProfileViewModel", "Erro ao seguir usuário: ${response.code()}")
+                    _uiEvent.emit(UiEvent.ShowError("Erro ao seguir usuário"))
                 }
             } catch (e: Exception) {
-                Log.e("ProfileViewModel", "Erro ao seguir usuário", e)
+                _uiEvent.emit(UiEvent.ShowError("Erro ao seguir usuário"))
             }
 
         }

@@ -1,6 +1,7 @@
 package br.notasocial.ui.components.store
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -10,6 +11,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,8 +35,13 @@ import coil.request.ImageRequest
 @Composable
 fun StoreAddressItem(
     modifier: Modifier = Modifier,
-    address: AddressDb
+    address: AddressDb,
+    storeName: String
 ) {
+    var showDialog by remember {
+        mutableStateOf(false)
+    }
+
     Surface(
         modifier = modifier,
         border = BorderStroke(width = 1.dp, color = Color.hsl(128f, .52f, .47f, .2f)),
@@ -40,15 +50,16 @@ fun StoreAddressItem(
     ) {
         Column(
             modifier = Modifier
-                .padding(10.dp),
+                .padding(10.dp)
+                .clickable { showDialog = !showDialog },
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             AsyncImage(
                 model = ImageRequest.Builder(context = LocalContext.current)
-                    .data("https://static.vecteezy.com/ti/vetor-gratis/p1/5766127-supermercado-loja-logo-vetor.jpg")
+                    .data("")
                     .crossfade(true)
                     .build(),
-                error = painterResource(R.drawable.ic_broken_image),
+                error = painterResource(R.drawable.nota_social_typho),
                 placeholder = painterResource(R.drawable.loading_img),
                 contentDescription = "",
                 contentScale = ContentScale.Fit,
@@ -64,6 +75,17 @@ fun StoreAddressItem(
                 textAlign = TextAlign.Center,
                 lineHeight = 1.2.em,
                 modifier = Modifier.width(100.dp)
+            )
+        }
+        if (showDialog) {
+            StoreDialog(
+                address = address,
+                isButtonsEnabled = false,
+                storeName = storeName,
+                onDismissRequest = {
+                    showDialog = !showDialog
+                },
+                onRemove = {}
             )
         }
     }

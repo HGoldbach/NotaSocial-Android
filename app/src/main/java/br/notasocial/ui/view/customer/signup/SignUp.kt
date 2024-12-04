@@ -11,8 +11,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Email
@@ -63,6 +65,7 @@ fun SignUpScreen(
 ) {
     val uiState = viewModel.uiState
     val context = LocalContext.current
+    val scrollState = rememberScrollState()
 
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collect { event ->
@@ -84,7 +87,8 @@ fun SignUpScreen(
         modifier = modifier
             .fillMaxSize()
             .background(color = Color.hsl(128f, .52f, .47f, 1f))
-            .padding(35.dp),
+            .padding(35.dp)
+            .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         TopSection(
@@ -92,7 +96,6 @@ fun SignUpScreen(
         )
         Spacer(modifier = Modifier.height(40.dp))
         FormSection(
-//            modifier = Modifier.weight(1f),
             uiState = uiState,
             onPerfilChange = viewModel::onProfileTypeChange,
             onNameChange = viewModel::onNameChange,
@@ -217,7 +220,7 @@ fun FormSection(
                 ) else Color.White,
                 fontFamily = ralewayFamily,
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 14.sp,
+                fontSize = 12.sp,
             )
         }
     }

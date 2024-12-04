@@ -18,13 +18,13 @@ import retrofit2.http.Part
 interface AuthApiService {
 
     @Multipart
-    @POST("user/account/store")
+    @POST("register/account/store")
     suspend fun registerStore(
         @Part("storeAccountRequestDTO") store: StoreAuthRequest
     ): Response<StoreAuthResponse>
 
     @Multipart
-    @POST("user/account/user")
+    @POST("register/account/user")
     suspend fun registerCustomer(
         @Part("customerAccountRequestDTO") customer: CustomerAuthRequest
     ): Response<CustomerAuthResponse>
@@ -34,7 +34,7 @@ interface AuthApiService {
     suspend fun signIn(@Body signIn: SignInAuthRequest): Response<SignInAuthResponse>
 
     @Multipart
-    @PATCH("user/account/user")
+    @PATCH("register/account/user")
     suspend fun updateCustomer(
         @Header("Authorization") token: String,
         @Part("customerAccountRequestDTO") customer: CustomerAuthRequest

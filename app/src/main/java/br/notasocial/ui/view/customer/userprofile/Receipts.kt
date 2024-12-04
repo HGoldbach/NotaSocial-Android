@@ -75,17 +75,6 @@ fun NotasTopSection(
             fontFamily = ralewayFamily,
             modifier = Modifier.padding(vertical = 15.dp)
         )
-        Row {
-            SearchBar(
-                placeholderText = "Buscar Nota",
-                searchText = "",
-                onSearchChange = {},
-                searchProduct = {},
-                modifier = Modifier.weight(1f)
-            )
-            Spacer(modifier = Modifier.padding(10.dp))
-            FilterSearch()
-        }
     }
 }
 
@@ -102,6 +91,7 @@ fun NotasGrid(
         ) {
             Text(
                 text = "Nenhuma nota cadastrada",
+                color = Color.Black,
                 fontSize = 14.sp,
                 fontFamily = ralewayFamily,
                 fontWeight = FontWeight.Medium
@@ -138,12 +128,3 @@ fun NotasTopSectionPreview() {
         NotasTopSection()
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun NotasGridPreview() {
-//    NotasocialTheme {
-//        NotasGrid(receipts = viewModel.receipts)
-//    }
-//}
-//
